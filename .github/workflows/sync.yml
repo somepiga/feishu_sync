@@ -22,6 +22,9 @@ jobs:
       - name: Install dependencies
         run: pip install -r scripts/requirements.txt
 
+      - name: Create content directory
+        run: mkdir -p content/documents && touch content/documents/.gitkeep
+
       - name: Run sync script
         env:
           FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
@@ -34,3 +37,4 @@ jobs:
         with:
           commit_message: "Sync feishu docs $(date -u +'%Y-%m-%d %H:%M:%S')"
           file_pattern: content/documents/*.json
+          add_options: "--force"
