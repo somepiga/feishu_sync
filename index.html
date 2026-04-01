@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>飞书文档</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f5f5; padding: 20px; }
+    .container { max-width: 800px; margin: 0 auto; }
+    h1 { text-align: center; margin-bottom: 30px; color: #333; }
+    .doc-list { display: grid; gap: 16px; }
+    .doc-card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+    .doc-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+    .doc-title { font-size: 18px; font-weight: 600; color: #1a1a1a; margin-bottom: 8px; }
+    .doc-updated { font-size: 12px; color: #999; }
+    .doc-content { display: none; margin-top: 16px; padding-top: 16px; border-top: 1px solid #eee; white-space: pre-wrap; line-height: 1.8; color: #333; }
+    .doc-card.open .doc-content { display: block; }
+    .back-btn { display: none; position: fixed; top: 20px; left: 20px; padding: 8px 16px; background: #333; color: white; border: none; border-radius: 4px; cursor: pointer; z-index: 100; }
+    .back-btn.show { display: block; }
+    .loading { text-align: center; padding: 40px; color: #666; }
+    .error { text-align: center; padding: 40px; color: #e54; }
+  </style>
+</head>
+<body>
+  <button class="back-btn" onclick="showList()">← 返回列表</button>
+  <div class="container">
+    <h1>飞书文档</h1>
+    <div id="content">
+      <div class="loading">加载中...</div>
+    </div>
+  </div>
+
+  <script>
+    const DOCS_URL = 'content/documents/';
+
+    async function loadDocs() {
+      try {
+        // 获取文档列表
+        const response = await fetch(DOCS_URL);
+        const html = await response.text();
+
+        // 解析 HTML 获取文件列表
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const links = doc.querySelectorAll('a');
+        const files = [];
+
+        links.forEach(link => {
+          const href = link.getAttribute('href');
+          if (href && href.endsWith('.json')) {
+            files.push(DOCS_URL + href);
+          }
+        });
+
+        if (files.length === 0) {
+          document.getElementById('content').innerHTML = '<div class="error">暂无文档</div>';
+          return;
+        }
+
+        // 加载所有文档
+        const docs = await Promise.all(files.map(f => fetch(f).then(r => r.json())));
+
+        // 按更新时间排序
+        docs.sort((a, b) => (b.updated_at || '').localeCompare(a.updated_at || ''));
+
+        // 渲染列表
+        renderList(docs);
+      } catch (err) {
+        document.getElementById('content').innerHTML = `<div class="error">加载失败: ${err.message}</div>`;
+      }
+    }
+
+    function renderList(docs) {
+      const container = document.getElementById('content');
+      container.innerHTML = '<div class="doc-list"></div>';
+      const list = container.querySelector('.doc-list');
+
+      docs.forEach((doc, index) => {
+        const card = document.createElement('div');
+        card.className = 'doc-card';
+        card.onclick = () => showDoc(index);
+
+        const updated = doc.updated_at ? new Date(doc.updated_at * 1000).toLocaleString('zh-CN') : '未知';
+
+        card.innerHTML = `
+          <div class="doc-title">${escapeHtml(doc.title)}</div>
+          <div class="doc-updated">更新时间: ${updated}</div>
+          <div class="doc-content">${escapeHtml(doc.raw_content || '（无内容）')}</div>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    function showDoc(index) {
+      const cards = document.querySelectorAll('.doc-card');
+      cards.forEach((card, i) => {
+        if (i === index) {
+          card.classList.add('open');
+        } else {
+          card.classList.remove('open');
+          card.style.display = 'none';
+        }
+      });
+      document.querySelector('.back-btn').classList.add('show');
+      document.querySelector('h1').style.display = 'none';
+    }
+
+    function showList() {
+      document.querySelectorAll('.doc-card').forEach(card => {
+        card.classList.remove('open');
+        card.style.display = '';
+      });
+      document.querySelector('.back-btn').classList.remove('show');
+      document.querySelector('h1').style.display = '';
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    loadDocs();
+  </script>
+</body>
+</html>
