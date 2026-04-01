@@ -146,61 +146,77 @@ def fetch_wiki_docs(app_id: str, app_secret: str, wiki_token: str) -> List[Dict]
     """从 Wiki 知识库获取所有文档"""
     client = FeishuClient(app_id, app_secret)
 
-    # 获取根节点信息
-    print(f"Fetching wiki node: {wiki_token}")
-    root = client.get_wiki_node(wiki_token)
-    root_node = root.get("node", {})
-    space_id = root_node.get("space_id")
-    root_title = root_node.get("title", "Wiki Root")
+    # 支持逗号分隔的多个 wiki token
+    wiki_tokens = [t.strip() for t in wiki_token.split(",") if t.strip()]
+    print(f"Fetching {len(wiki_tokens)} wiki(s)")
 
-    print(f"Wiki space ID: {space_id}")
-    print(f"Root node: {root_title}")
+    all_results = []
+    for i, token in enumerate(wiki_tokens):
+        print(f"\n[{i+1}/{len(wiki_tokens)}] Processing wiki: {token}")
 
-    # 获取所有子节点
-    print(f"Fetching all nodes in wiki space...")
-    all_nodes = client.get_wiki_children(space_id, wiki_token)
-    print(f"Found {len(all_nodes)} nodes")
-
-    # 筛选出文档类型的节点
-    doc_nodes = []
-    for node in all_nodes:
-        if node.get("obj_type") == "docx":
-            doc_nodes.append({
-                "node_token": node.get("node_token"),
-                "obj_token": node.get("obj_token"),
-                "title": node.get("title"),
-                "has_child": node.get("has_child", False),
-                "obj_edit_time": node.get("obj_edit_time")  # 文档编辑时间
-            })
-
-    print(f"Found {len(doc_nodes)} documents")
-
-    # 获取每个文档的内容
-    results = []
-    for i, doc in enumerate(doc_nodes):
-        print(f"[{i+1}/{len(doc_nodes)}] Fetching: {doc['title']}")
-
+        # 获取根节点信息
         try:
-            meta = client.get_doc_meta(doc["obj_token"])
-            raw_content = client.get_doc_raw_content(doc["obj_token"])
-
-            results.append({
-                "node_token": doc["node_token"],
-                "id": doc["obj_token"],
-                "title": doc["title"],
-                "type": "docx",
-                "meta": meta,
-                "raw_content": raw_content,
-                "updated_at": meta.get("document", {}).get("updated_at") or doc.get("obj_edit_time")
-            })
-
-            time.sleep(0.2)
-
+            root = client.get_wiki_node(token)
+            root_node = root.get("node", {})
+            space_id = root_node.get("space_id")
+            root_title = root_node.get("title", "Wiki Root")
         except Exception as e:
-            print(f"  Error fetching {doc['title']}: {e}")
+            print(f"  Failed to get wiki node: {e}")
             continue
 
-    return results
+        print(f"  Wiki space ID: {space_id}")
+        print(f"  Root node: {root_title}")
+
+        # 获取所有子节点
+        print(f"  Fetching all nodes in wiki space...")
+        try:
+            all_nodes = client.get_wiki_children(space_id, token)
+            print(f"  Found {len(all_nodes)} nodes")
+        except Exception as e:
+            print(f"  Failed to get children: {e}")
+            continue
+
+        # 筛选出文档类型的节点
+        doc_nodes = []
+        for node in all_nodes:
+            if node.get("obj_type") == "docx":
+                doc_nodes.append({
+                    "node_token": node.get("node_token"),
+                    "obj_token": node.get("obj_token"),
+                    "title": node.get("title"),
+                    "has_child": node.get("has_child", False),
+                    "obj_edit_time": node.get("obj_edit_time"),
+                    "wiki_token": token  # 记录来源
+                })
+
+        print(f"  Found {len(doc_nodes)} documents")
+
+        # 获取每个文档的内容
+        for j, doc in enumerate(doc_nodes):
+            print(f"  [{j+1}/{len(doc_nodes)}] Fetching: {doc['title']}")
+
+            try:
+                meta = client.get_doc_meta(doc["obj_token"])
+                raw_content = client.get_doc_raw_content(doc["obj_token"])
+
+                all_results.append({
+                    "node_token": doc["node_token"],
+                    "id": doc["obj_token"],
+                    "title": doc["title"],
+                    "type": "docx",
+                    "meta": meta,
+                    "raw_content": raw_content,
+                    "updated_at": meta.get("document", {}).get("updated_at") or doc.get("obj_edit_time"),
+                    "wiki_token": doc["wiki_token"]
+                })
+
+                time.sleep(0.2)
+
+            except Exception as e:
+                print(f"    Error fetching {doc['title']}: {e}")
+                continue
+
+    return all_results
 
 
 def fetch_folder_docs(app_id: str, app_secret: str, folder_token: str) -> List[Dict]:
