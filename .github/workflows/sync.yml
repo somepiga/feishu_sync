@@ -5,6 +5,9 @@ on:
     - cron: '0 2 * * *'  # 每天凌晨2点执行
   workflow_dispatch:      # 支持手动触发
 
+permissions:
+  contents: write
+
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -34,9 +37,8 @@ jobs:
 
       - name: Commit and push
         run: |
-          pwd
-          ls -la content/documents/
-          git status
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
           git add content/documents/
           git diff --cached --stat
           git commit -m "Sync feishu docs $(date -u +'%Y-%m-%d %H:%M:%S')" || echo "No changes"
