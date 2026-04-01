@@ -86,7 +86,7 @@ class FeishuClient:
         )
 
     def get_wiki_children(self, space_id: str, parent_node_token: str = "") -> List[Dict]:
-        """获取 Wiki 空间下的子节点"""
+        """递归获取 Wiki 空间下所有层级的节点"""
         all_nodes = []
         page_token = None
 
@@ -111,6 +111,28 @@ class FeishuClient:
 
             page_token = data.get("page_token")
             time.sleep(0.1)
+
+        return all_nodes
+
+    def get_all_wiki_nodes_recursive(self, space_id: str, root_token: str = "") -> List[Dict]:
+        """递归获取 Wiki 空间下所有节点（所有层级）"""
+        all_nodes = []
+        to_fetch = [root_token] if root_token else [""]
+
+        while to_fetch:
+            parent_token = to_fetch.pop(0)
+            children = self.get_wiki_children(space_id, parent_token)
+            all_nodes.extend(children)
+
+            # 对于有子节点的节点，加入待处理队列
+            for child in children:
+                if child.get("has_child"):
+                    child_node_token = child.get("node_token")
+                    if child_node_token and child_node_token not in [n.get("node_token") for n in all_nodes if n.get("node_token")]:
+                        to_fetch.append(child_node_token)
+
+            if children:
+                time.sleep(0.2)
 
         return all_nodes
 
@@ -167,11 +189,11 @@ def fetch_wiki_docs(app_id: str, app_secret: str, wiki_token: str) -> List[Dict]
         print(f"  Wiki space ID: {space_id}")
         print(f"  Root node: {root_title}")
 
-        # 获取所有子节点
-        print(f"  Fetching all nodes in wiki space...")
+        # 获取所有子节点（递归）
+        print(f"  Fetching all nodes in wiki space (recursive)...")
         try:
-            all_nodes = client.get_wiki_children(space_id, token)
-            print(f"  Found {len(all_nodes)} nodes")
+            all_nodes = client.get_all_wiki_nodes_recursive(space_id, token)
+            print(f"  Found {len(all_nodes)} nodes total")
         except Exception as e:
             print(f"  Failed to get children: {e}")
             continue
