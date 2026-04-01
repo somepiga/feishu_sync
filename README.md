@@ -57,7 +57,7 @@ git push -u origin main
 |------------|-----|
 | `FEISHU_APP_ID` | 第 1 步获取的 App ID |
 | `FEISHU_APP_SECRET` | 第 1 步获取的 App Secret |
-| `FEISHU_FOLDER_TOKEN` | 第 2 步获取的文件夹 Token |
+| `FEISHU_WIKI_TOKEN` | 第 2 步获取的 Wiki 节点 Token |
 
 ### 6. 启用 GitHub Pages
 
@@ -78,13 +78,8 @@ git push -u origin main
   "id": "doc_token",
   "title": "文档标题",
   "updated_at": "2024-01-01T12:00:00",
-  "blocks": [
-    {
-      "id": "block_id",
-      "type": "paragraph",
-      "content": "段落文本内容"
-    }
-  ]
+  "raw_content": "文档的纯文本内容",
+  "blocks": []
 }
 ```
 
