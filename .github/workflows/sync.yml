@@ -39,6 +39,9 @@ jobs:
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
+          pwd
+          ls -la content/documents/
+          find content/documents/ -name "*.json" -ls
           git add content/documents/
           git diff --cached --stat
           git commit -m "Sync feishu docs $(date -u +'%Y-%m-%d %H:%M:%S')" || echo "No changes"
