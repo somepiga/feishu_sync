@@ -1,0 +1,12 @@
+{
+  "id": "QhpEdhiqqoAvbQx1JPocChFMnxd",
+  "title": "千里智驾",
+  "updated_at": "2026-03-05T14:22:18+00:00",
+  "raw_content": "千里智驾\n\n千里需求BEV模型适配\n模型：\nbevformer:（本次评估）\nbevfusion:（本次评估）\n数据集：\nnusence数据\n要求分别测试：\n要求统计数据：\n松花江公有云智驾需求\n▼场景：训练\n▼场景：推理\n千里需求BEV模型适配\n模型：\nbevformer:（本次评估）\nhttps://github.com/fundamentalvision/BEVFormer\n测试配置：  BEVFormer:projects/configs/bevformer/bevformer_base.py\nbevfusion:（本次评估）\nhttps://github.com/mit-han-lab/bevfusion\n测试配置：  https://github.com/open-mmlab/mmdetection3d/blob/main/projects/BEVFusion/configs/bevfusion_lidar_voxel0075_second_secfpn_8xb4-cyclic-20e_nus-3d.py\n数据集：\nnusence数据\nhttps://www.nuscenes.org/nuscenes#download\n注意：  bevformer和bevfusion都用nusence数据集，只有二者处理方式不一样，readme中分别有各自的处理流程节省。\n要求分别测试：\n给出测试环境配置\n单机单卡、单机8卡，2机8卡（如果一台机器有16卡，则是单机16卡，2机16卡）\nbatchsize: 1, 2, 3, 4, 8, 16\n要求统计数据：\n单step耗时时间 （注意单位是s/iter，而不是iter/s）\n多卡吞吐量  = 卡数 * 机器数 * batch_size / 单step耗时时间；\n单卡吞吐量  = 多卡吞吐量 / (卡数 * 机器数)\n松花江公有云智驾需求\n▼场景：训练\n模型：efficientnet、resnet50、sparse4D、bevformer\nbev配置： BEVFormer:projects/configs/bevformer/bevformer_base.py\nbev数据集： nusence\n台数：单卡、8卡（1机）、16卡（2机）、32卡（4机）、64卡（8机）\n精度：FP32\n参数：mbs= 1\n对比卡型：H20\n衡量指标：吞吐samples/sec、线性度\n▼场景：推理\n模型：InternVL2_5-4B-AWQ\n模型链接：\nhttps://www.modelscope.cn/models/OpenGVLab/InternVL2_5-4B-AWQ\n精度：W4A16\n参数：input 1000、output 20\n框架：sglang\n对比卡型：L20\n衡量指标：E2E时延150ms下最大吞吐\n",
+  "blocks": [],
+  "node_token": "G6jEwQKXwiQHn4kfegQcylKwnOd",
+  "parent_node_token": "ZMo5wcEhbiksWbkYOAzcoHNfnnE",
+  "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
+  "space_id": "7613776537935514838",
+  "type": "docx"
+}

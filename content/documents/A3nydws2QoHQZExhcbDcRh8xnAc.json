@@ -1,0 +1,12 @@
+{
+  "id": "A3nydws2QoHQZExhcbDcRh8xnAc",
+  "title": "壁仞",
+  "updated_at": "2026-03-12T09:46:09+00:00",
+  "raw_content": "壁仞\n1. vllm和sglang有什么区别，推理后端有什么异同，说说continuous batch\n2. 训练场景和推理场景有什么不同，可以从计算效率、显存占用、扩展性方面回答 \n3. 有没有可能通过增加并行节点数量，达到训练速度超线性增加\n4. 实现两个矩阵连乘，要求在两张卡上分布式运行，怎么切分权重，使通信量最小\n5. 手撕矩阵乘\n6. 假如一个计算流程一共有若干步，运行到一半，用户突然终止任务，需要怎么操作才能返回预期结果（可以参考操作系统中断的思路）\n7. 展示自己的GitHub代码库\n\n",
+  "blocks": [],
+  "node_token": "O47LwFIRsi9kMJk1Vzec3BcRn9e",
+  "parent_node_token": "T9cLwwI9gikPY5kSnzqcfbYYnlf",
+  "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
+  "space_id": "7613776537935514838",
+  "type": "docx"
+}

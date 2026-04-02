@@ -1,0 +1,12 @@
+{
+  "id": "SV3adjIPPo6OF2xgRMLc7Nl1n0f",
+  "title": "添加算子流程",
+  "updated_at": "2026-03-05T14:22:14+00:00",
+  "raw_content": "添加算子流程\n1. 定义算子 Schema\n在 torch_br/csrc/aten/br_native_functions.yaml 添加函数签名。\n生成或更新相关自动注册代码（通常由构建脚本生成）。\n2. 注册到 Dispatcher\n在 torch_br/csrc/aten/CustomRegisterSchema.cpp 中：\nm.def(\"op_name(...)->...\") 定义 schema。\nm.impl(\"op_name\", TORCH_FN(...)) 绑定实现。\n3. 连接 SUPA Native Functions\n在 torch_br/csrc/aten/core/SUPANativeFunctions.h 声明接口。\n在torch_br/csrc/aten/operators/pt_frontend_op/ 下实现：\n 参数检查\n 通过PtOpIRBuilder() 生成 IR\n4. 后端实现（SUPA kernel）\n在torch_br/csrc/aten/operators/supa_backend_op/kernels/ 添加.su 内核。\n在torch_br/csrc/aten/operators/supa_backend_op/ 增加 glue 代码，关联 kernel。\n5. RegisterSUPA 绑定\n在torch_br/csrc/aten/RegisterSUPA.cpp 添加 PrivateUse1 注册：\n wrapper\n m.impl(\"op_name\", TORCH_FN(wrapper...))\n6. Redispatch 与 CustomFunctions\n在torch_br/csrc/aten/CustomFunctions.h/.cpp 添加 redispatch 调用。\n在torch_br/csrc/aten/CustomRedispatch.h/.cpp 添加 dispatch key 版本。\n7. Python 绑定\n在torch_br/utils/custom_ops.py 加入：\ntorch_br.op_name = torch.ops.supa.op_name\n\n\n",
+  "blocks": [],
+  "node_token": "CRtfwQVsoiNvqsklAzAcimlEnXf",
+  "parent_node_token": "TMFCwbW9FiKTlXk0skbc1whNnxb",
+  "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
+  "space_id": "7613776537935514838",
+  "type": "docx"
+}

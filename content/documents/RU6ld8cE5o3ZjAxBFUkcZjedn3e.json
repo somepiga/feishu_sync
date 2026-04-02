@@ -1,0 +1,12 @@
+{
+  "id": "RU6ld8cE5o3ZjAxBFUkcZjedn3e",
+  "title": "kv cache shape, H = 8192, 可以换下看是否性能有收益",
+  "updated_at": "2026-03-05T14:22:28+00:00",
+  "raw_content": "kv cache shape, H = 8192, 可以换下看是否性能有收益\n基础信息：\n基于kernel ： Page_Attn_chunk_decode_ds_KVUMA\n平台：br166\n验证用例：\nEXPECT_TRUE((testGQA_chunk_prefill_packing_no_align<BF16, mask_mode_causal, UMAMemType, OutMemType_NUMA, UMAMemType, UMAMemType, Test_Perf, false>(\n0, 16, 1024, 4096, max_num_token, window_size, 1, 8, 1, 576, spc_num, die_num, repeat_time, warmup_time)\n.pass));\nEXPECT_TRUE((testGQA_chunk_prefill_packing_no_align<BF16, mask_mode_causal, UMAMemType, OutMemType_NUMA, UMAMemType, UMAMemType, Test_Perf, false>(\n0, 16, 128, 4096, max_num_token, window_size, 1, 8, 1, 576, spc_num, die_num, repeat_time, warmup_time)\n.pass));\n\n\n\n优化代码：\n修改test中KV usharp shape，上述几个用例对应的KV usharp shape H轴是8192，尝试将H调整小于8192，避免撞上某个临界条件\n当前吧8192调整成8192 - 256\nimage2025-11-17_16-34-32.png\n\n\n性能数据：\nimage2025-11-17_16-33-56.png\n\n\n\n\n结论：该优化点无性能收益\n",
+  "blocks": [],
+  "node_token": "TM8gwEwZSiXQ6RkcrxGcPX8znFe",
+  "parent_node_token": "FKeVw0mzhifcgskAcHZcGnPUnGh",
+  "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
+  "space_id": "7613776537935514838",
+  "type": "docx"
+}

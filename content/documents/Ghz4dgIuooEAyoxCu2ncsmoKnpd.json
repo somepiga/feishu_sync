@@ -1,0 +1,12 @@
+{
+  "id": "Ghz4dgIuooEAyoxCu2ncsmoKnpd",
+  "title": "超大W Linear分析",
+  "updated_at": "2026-03-05T14:22:25+00:00",
+  "raw_content": "超大W Linear分析\n\n\n\nshape\n\n(1, 18 * 1024, 4096, 32000)\n\n\n\nperSpc\n\n(1, 18 * 1024, 4096, 2000)\n\n\n\noutPartitionM/K/N\n\n1024/4096/1024\n\n\n\nreload_a_hbm_to_gib\n\n2\n\n\n\nreload_b_hbm_to_gmb\n\n1\n\n\n\nreload_b_gmb_to_gib\n\n1024 / 256 = 4\n\n\n\nload_a_hbm_to_gib\n\n18432 * 4096 * 2 * 2 / 60 = 5,033,164.8\n\n\n\nload_b_hbm_to_gmb\n\n4096 * 2000 * 1 * 1 / 40 = 204,800\n\n\n\nload_b_gmb_to_gib\n\n4096 * 2000 * 4 * 1 / 256 = 128,000\n\n\n\ngemm\n\n18432 * 4096 * 2000 / 16384 = 9,216,000\n\n\n\nwrite_l2\n\n18432 * 2000 * 8 * 4 / 256 = 4,608,000\n\n\n\ntypecast\n\n18432 * 2000 * 2 / 30 = 2,457,600\n\n\n\nres\n\nmax(5,033,164.8, 9,216,000, 4,608,000, 128,000)\n+ 204,800 + 2,457,600 = 11,878,400\n\n\n\n实测：\n\n39.41 ms\n\n\n\n优化为loadOnce\n\n21.6339 ms\n\n\n\nL2只使用2MB\n\n14.7461 ms\n\n\n",
+  "blocks": [],
+  "node_token": "FvsQwziFqiLP6qkEYQLcMtv4nJf",
+  "parent_node_token": "UAvZwYCfHiDLSPk1yGkcy0r1n4d",
+  "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
+  "space_id": "7613776537935514838",
+  "type": "docx"
+}

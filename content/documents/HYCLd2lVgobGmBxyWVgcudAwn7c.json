@@ -1,0 +1,12 @@
+{
+  "id": "HYCLd2lVgobGmBxyWVgcudAwn7c",
+  "title": "遗留问题",
+  "updated_at": "2026-03-08T08:34:14+00:00",
+  "raw_content": "遗留问题\nD2H速度慢于H2D，一说 H2D是memory write，设备地址和数据直接发送，D2H是memory read，先发给设备需要的内存地址，再发回响应数据，数据chunksize越小，一来一回之间开销就越大\n\n",
+  "blocks": [],
+  "node_token": "V9gjwL8NOigJWUkm6Pdc4kJtnd5",
+  "parent_node_token": "Bp17wF1zsiTZSdkWXpVcaOminad",
+  "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
+  "space_id": "7613776537935514838",
+  "type": "docx"
+}

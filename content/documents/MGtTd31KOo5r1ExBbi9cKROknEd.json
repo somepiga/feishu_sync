@@ -1,0 +1,12 @@
+{
+  "id": "MGtTd31KOo5r1ExBbi9cKROknEd",
+  "title": "GEMM B buff 数据量异常分析",
+  "updated_at": "2026-03-05T14:22:30+00:00",
+  "raw_content": "GEMM B buff 数据量异常分析\n\n\n在分析MHA性能中通过  性能专家系统 -DrPerfViz 发现 gemm Bbuf的数据量与理论计算不符\n\n经过缩小排查范围，代码中只保留 Q*K,\n每个spc处理数据：\nQ:  [2, 1, 128]\nK：[2, 512,128]\n\n1、 测试代码：\nkernel部分代码如下：\nimage2023-12-15_12-40-36.png\n\n\n2、 理论size\n该case不会有reload ABbuf\nAbuf size = 2*64*128*sizeof(FP32) =  65535\nBbuf size = 2*512*128*sizeof(FP32) = 524288\n\n3、DrPerfViz 系统中数据\nDrPerfViz 系统中gemm_in_traffic显示如下， 其中 LoadA Byte与计算一致， Load B Byte 比理论多一倍\nctc_cycles(avg) = 13730\n\nimage2023-12-15_12-38-3.png\n\nimage2023-12-15_12-37-9.png\n\n\n4、修改kernel\nkernel中实现的是 Q*Kt, load B Buf事设置了 tci :: TRANSPOSE 不考虑代码的正确性 设置NOT_TRANSPOSE， 如下所示\nimage2023-12-15_12-48-47.png\n\n\n此时，DrPerfViz 系统中gemm_in_traffic显示 Load B Byte 与理论一致\nctc_cycles(avg) = 9312\nimage2023-12-15_12-51-6.png\n\n\n5. 分析原因\n\nldmma1 FP32 teanspose时 比non_transpose 的入口带宽少一半，具体为何DrPerfViz 系统显示不对需要的问题需要架构师分析\nimage2023-12-15_12-52-23.png\n\n",
+  "blocks": [],
+  "node_token": "UuRXwgXJoiqkuTkPAdTc32V3n8O",
+  "parent_node_token": "UrztwETTqiMHMfkEuMiczEB0nCf",
+  "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
+  "space_id": "7613776537935514838",
+  "type": "docx"
+}

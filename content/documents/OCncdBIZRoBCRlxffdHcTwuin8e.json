@@ -1,0 +1,12 @@
+{
+  "id": "OCncdBIZRoBCRlxffdHcTwuin8e",
+  "title": "降频实验",
+  "updated_at": "2026-03-05T14:22:23+00:00",
+  "raw_content": "降频实验\n一：环境配置\n\n\n机器\n\n252\n\n路径\n\n/home/jenkins/repo/supa-test\n\nFull-stack\n\n3489\n\nbranch\n\nFullstack-3489-4spc\n二：测试结果\n\nMMA降频实验 - 电子表格.xlsx\n\n测试结论：\ndecoder：无论是降频到800MHZ，还是500MHZ，CBI的损失大都在10%以内。\n",
+  "blocks": [],
+  "node_token": "AdLZwRglcivt8qkOrPEcUNfMn5V",
+  "parent_node_token": "X8nlwrO7sim5tJkspUHcumyInlb",
+  "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
+  "space_id": "7613776537935514838",
+  "type": "docx"
+}

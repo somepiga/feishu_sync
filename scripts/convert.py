@@ -5,7 +5,21 @@
 
 import json
 from typing import Dict, List, Any, Optional
-from datetime import datetime
+from datetime import datetime, timezone
+
+
+def normalize_updated_at(updated_at):
+    """将飞书返回的秒级/毫秒级时间戳统一转成 ISO 字符串。"""
+    if updated_at in (None, ""):
+        return None
+
+    try:
+        numeric = float(updated_at)
+        if numeric > 1_000_000_000_000:
+            numeric /= 1000
+        return datetime.fromtimestamp(numeric, tz=timezone.utc).isoformat()
+    except Exception:
+        return str(updated_at)
 
 
 def convert_feishu_doc(doc_data: Dict) -> Dict:
@@ -27,19 +41,22 @@ def convert_feishu_doc(doc_data: Dict) -> Dict:
     raw_content = doc_data.get("raw_content", "")
 
     # 转换更新时间
-    if updated_at:
-        try:
-            updated_at = datetime.fromtimestamp(updated_at / 1000).isoformat()
-        except:
-            updated_at = str(updated_at)
+    updated_at = normalize_updated_at(updated_at)
 
-    return {
+    converted = {
         "id": doc_id,
         "title": title,
         "updated_at": updated_at,
         "raw_content": raw_content,
         "blocks": []
     }
+
+    for field in ("node_token", "parent_node_token", "wiki_token", "space_id", "type"):
+        value = doc_data.get(field)
+        if value is not None:
+            converted[field] = value
+
+    return converted
 
 
 def load_existing_docs(content_dir: str) -> Dict[str, Dict]:

@@ -1,0 +1,12 @@
+{
+  "id": "TBgJdrWK1otPGAx2w8Zc6Kmeniz",
+  "title": "MHA/GQA decoder 性能优化记录",
+  "updated_at": "2026-03-05T14:22:18+00:00",
+  "raw_content": "MHA/GQA decoder 性能优化记录\n[deepseek] GQA die间DP方案分析\n[SUPA] MHA decoder Perf.&Prec. Optimization Report\n2025.11月MQA算子性能review后一些优化点尝试\ncontinuous batch\nGQA/MHA prefill kernel DB性能优化\nGQA decoder支持low precision优化\nGQA优化2- KV使用NUMA\nGQA 优化1-折叠q_head到seq维度\nGQA优化-deepseek理论性能分析\nGQA 优化- preload GMB\nGQA优化 Qwen\nMHA/GQA prefill支持window mask\nMulti-Head-Attention性能优化记录\nMulti Head Attention 理论性能计算\n分享1：MHA/GQA/MQA实现\n大模型推理 MHA decoder优化总结\n小batch优化-spc间拆分seq\n接口及方案 MHA/GQA\n\n",
+  "blocks": [],
+  "node_token": "UB1VwxdU1i4JzFkmi96cjhOjndg",
+  "parent_node_token": "ZMo5wcEhbiksWbkYOAzcoHNfnnE",
+  "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
+  "space_id": "7613776537935514838",
+  "type": "docx"
+}

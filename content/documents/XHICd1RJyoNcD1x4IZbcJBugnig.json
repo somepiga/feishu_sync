@@ -1,0 +1,12 @@
+{
+  "id": "XHICd1RJyoNcD1x4IZbcJBugnig",
+  "title": "llm_infer: mma",
+  "updated_at": "2026-03-05T14:22:23+00:00",
+  "raw_content": "llm_infer: mma\n一、背景介绍\nhttps://jira01.birentech.com/browse/BSD-7510\nmma_case.xlsx\n所有shape均为动态shape\n除了特定模型【K, W】固定，【H】需要支持任意输入\n\n\n\n\nA\n\nB\n\nC\n\nDataType\n\nBF16\n\nBF16/S8\n\nFP32/BF16\n\nUsharp\n\nUMA\n\nNUMA\n\nUMA/NUMA\n\nE.G:\n给定一个shape，则拆分方式如下： (16384*4096)x(4096*4096) = （16384，4096）（UNN， 16spc)，则 切分之后为：\n\n\nA（BF16)\n\nB(BF16/S8)\n\nC（FP32/BF16)\n\nUMA\n\nNUMA\n\nNUMA/UMA\n\n（ NUM_SPC , 16384,  4096 / NUM_SPC ）\n\n（ NUM_SPC ,  4096 / NUM_SPC ， 4096 / NUM_SPC ， NUM_SPC ）\n\n（1, 16384,  4096 / NUM_SPC ，  NUM_SPC ）\n\n( NUM_SPC  *  NUM_SPC ,  16384 / NUM_SPC , 4096 / NUM_SPC ）\n\n（ NUM_SPC ,  4096 / NUM_SPC ， 4096 / NUM_SPC ， NUM_SPC ）\n\n（ NUM_SPC ,  16384 / NUM_SPC ,  4096 / NUM_SPC ，  NUM_SPC ）\n\n(16 * 16,  1024, 256)\n\n( 16, 256, 256, 16)\n\n(16, 1024, 256, 16)\nN：NUMA，拆到spc之间，大部分模型小于1024\nK：也需要折叠 spc_num 份\n二：MMA\n2.1 Decoder场景\nbatch_size：大部分情况是小于64\nseq_length：1\nB = 1\nM = batch_size * seq_length\nN：NUMA，拆到spc之间，大部分模型拆完后小于1024\nK\n方案：\n不使用GMB\n使用外积，左右矩阵均只load一次\nL2累加\ncfed1309-7c4f-47ad-b345-36115230e06d.png\n\n\n2.2 prefill场景\nbatch_size: >= 1\nseq_length: > 1\nH: batch_size * seq_length。H比较大\n方案：\nB preload To GMB, Double Buffer\nGMB ld/st pingpong\nNuma L2累加 Double Buffer\nTypecast ld/st pingpong\nA buffer GIB M方向pingpong\nbb60928b-0345-47c9-93a7-ae87dc661dfe.png\n\n\n三：当前性能\nDecoder:\nBrscore : 0.91\n\n\n版本\n\n优化项\n\n性能(ms)\n\n\n\n\n\n[8*1, 7168, 8192]\n\nV1\n\n初始外积版本，MMA计算使用封装好的宏\n\n0.2227\n\nV2\n\n优化Load指令发射逻辑\n\n0.1994\n\nV3\n\n重构Load指令发射，MMA gsc计算释放逻辑\n\n0.1233\nEncoder:\nBrscore: 0.86\n\n\n版本\n\n优化项\n\n性能(ms)\n\n\n\n\n\n[8*511, 2048, 8192]\n\nV0\n\n外积方案(无Typecast)\n\n2.2621\n\nV1\n\n改变W每次做的粒度，减少L2累加\n\n1.91332\n\nV2\n\n初始GMB版本\n\n2.07\n\nV3\n\nNumaL2 累加，GMB Double buffer，A buffer pingpong\n\n1.35\n\nV4\n\nGMB ld/st pingpong，A buffer M pingpong, Numa L2 ld/st pingpong\n\n0.9101\n",
+  "blocks": [],
+  "node_token": "B8yLwgcthiXUv9k3UlHcJ6SsnOe",
+  "parent_node_token": "X8nlwrO7sim5tJkspUHcumyInlb",
+  "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
+  "space_id": "7613776537935514838",
+  "type": "docx"
+}

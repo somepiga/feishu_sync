@@ -1,0 +1,12 @@
+{
+  "id": "LrccdxonWoWBoixDkQZcCjSlnnf",
+  "title": "br GPU 架构",
+  "updated_at": "2026-03-05T14:22:13+00:00",
+  "raw_content": "br GPU 架构\n1. 基础知识\n1.1 拓扑\n1.1.1 卡间\nUBB（Universal Baseboard 通用基板）： 一块标准化的硬件底板，支持最多 8 个 OAM（OCP Accelerator Module）GPU 模块，这 8 个 GPU 模块形成 全连接 mesh 拓扑 ，每个 GPU 与其他 7 个 GPU 直接相连\n1.1.2 卡内\nUMA： 统一内存访问，所有核心访问所有内存速度一致\nNUMA： 非统一内存访问，内存被划分为多个 \"节点\"，核心访问本地节点内存更快，远程节点更慢\nw/a ：即 all-to-all（全连接） ，表示一种无特殊划分的连接方式\nSNC ：Sub-NUMA Cluster（子 NUMA 集群），将单个处理器进一步划分为多个 NUMA 节点\nSNC-4 ：在一个大 NUMA 中再划分 4 个小 NUMA\n1.2 GPU组件\n1.2.1 SPC（Streaming Processor Cluster 流处理器簇）\n它是GPU中用于执行计算任务的基本单元之一，通常包含多个计算单元和一些辅助单元。\n组成 ：\nTensor Core ：用于执行张量运算\nCompute Unit（计算单元，CU） ：包含多个流处理器（SP），用于执行一般的计算任务。\n缓存\n1.2.2 Die（芯片）\n定义 ：Die是指GPU芯片的一个物理单元，通常包含多个SPC和其他功能单元。一个GPU芯片可以包含多个Die，每个Die可以独立运行或协同工作。\n组成 ：\n多个SPC ：每个Die包含多个SPC，这些SPC共同完成计算任务。\nHBM ：高带宽存储器，用于存储GPU运行时的数据。\nD2D（Die-to-Die）接口 ：用于连接多个Die，实现数据的高速传输。\nP2P（Peer-to-Peer）接口 ：用于连接多个GPU芯片，实现多GPU协同工作。\n2. br GPU 实际架构解析\n以下按照GPU组织模块 由粗到细 展开\n2.1 GPU\n2.2 chip\n一个chip就是平时说的一张GPU卡，上图中有8个chip\n2.3 Die\n为了突破单 Die（芯片裸片）的性能上限，厂商会把多个 GPU Die 封装在同一块显卡里，形成 MCM（多芯片模组） 架构，这就天然形成了 NUMA 拓扑。\n比如AMD MI250X，br gpu等\nbr gpu有双die结构，一个chip由两个die组成，也就是2.1图中的蓝绿两个，一个是master die，一个是slave die\n2.3 SPC\nimage2022-8-16_12-19-26.png\n\n\nimage2022-8-15_10-15-0.png\n\n\n每个SPC包含：\n\n\n模块名称\n\n属性\n\n核心功能\n\nTensor Core (T-mode)\n\n1个\n\n负责张量运算（矩阵乘加、卷积等 AI 核心计算），内部包含 8 个 GEMM 单元，是 AI 加速的核心载体。\n\nCU (Compute Unit, G-mode)\n\n4个\n\n通用计算单元，处理图形渲染（Shader）和通用并行计算任务，每个 CU 包含指令调度器（SQ）、执行单元（EU）等子模块。\n\nL1 缓存\n\n32KB\n\n\n\nL1P5 Buffer\n\n4MB\n\n\n\nL1P75（RD Cache/WR Cache）\n\n128KB RD cache\n64KB WR Cache\n\nRD Cache：缓存张量加载（LDM）或 Tensor Core 输入数据\nWR Cache：缓存张量存储（STM）或 GEMM 写数据，优化写回效率。\n\nL2 Cache\n\n4MB（可配置为 3MB L2PAD + 1MB L2 Cache）\n\n\n\nRouter\n\n\n\n负责 SPC 内部模块（L2 Cache、L1P5 Buffer 等）的数据流路由，优化数据传输路径\n\nNIU（NOC Interface Unit）\n\n\n\n连接片上网络（NOC），实现多个 SPC 之间的高速通信\n\nCBI (Cluster Bus Interface)\n\n\n\nSPC 与 NOC 的通信网关，包含内存管理单元（MMU）、地址转换缓冲（uTLB）和一致性维护模块。\n\nCM (Context Manager )\n\n\n\n管理 CU 和 Tensor Core 的上下文，处理任务切换时的状态保存与恢复。\n\nPFC (Perf Counter)\n\n\n\n 性能计数器，监控计算效率、缓存命中率等指标，用于性能调优。\n\n再往下层的内容在平时工作中出现频率很少，这里不再展开，如有需要，可参考：\n1、BR GPU架构\nHBM、L2、region、section、MC与Layout\n2.4 CU\n2.5 Tensor Core\n\n\n",
+  "blocks": [],
+  "node_token": "V00fwx0TeifmV3kO0JfchFLsnOg",
+  "parent_node_token": "KxQiwiEKgii0UhkxloMc1msDnch",
+  "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
+  "space_id": "7613776537935514838",
+  "type": "docx"
+}

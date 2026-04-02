@@ -1,0 +1,12 @@
+{
+  "id": "LD9bdxZtgoH7NDxiaYtc34esnKe",
+  "title": "ncclx 迁移",
+  "updated_at": "2026-03-05T14:22:18+00:00",
+  "raw_content": "ncclx 迁移\nncclx论文： https://arxiv.org/abs/2510.20171\n开源代码： https://github.com/meta-pytorch/torchcomms/tree/main/comms/ncclx\n复现任务\n超大规模训练中网络延迟与拥塞控制的核心矛盾，核心创新是 DQPLB（Dynamic Queue Pair Load Balancing，动态队列对负载均衡） 技术\nimage2026-1-29_14-24-13.png\n\n背景\n层级化延迟挑战 ：\n同机架内通信延迟最低\n跨机架（同AI Zone）：延迟高 7×\n跨AI Zone：延迟高 15×\n跨数据中心建筑：延迟高 30×\n延迟主要来自累积的交换机延迟和电缆长度增加\n零拷贝的双刃剑效应 ：\n优势：消除NCCL两级复制机制，将控制消息从2次减为1次，显著降低延迟\n问题：整个消息一次性交给网络硬件，缺乏细粒度流控，容易导致：\n网络过载（尤其在高BDP链路上）\n交换机缓冲区堆积（实测比Llama3训练高一个数量级）\nDQPLB\nDQPLB巧妙结合了 零拷贝的低延迟优势 与 分段传输的流控能力 ：\n架构设计（4.4.1）\n控制QP + 多数据QP 模式：\n1个控制QP：仅用于集体操作开始时交换内存地址\nN个数据QP：实际承载数据传输，数量可配置\n按拓扑层级差异化配置 （关键创新）：\n\n\n连接类型\n\n配置策略\n\n原因\n\n同机架\n\n保守：较少QP、较小飞行消息数\n\n低BDP，避免缓冲区堆积\n\n跨机架/跨Zone\n\n中等\n\n中等BDP\n\n跨DC\n\n激进：更多QP、更大飞行消息数\n\n高BDP，需充分填充管道\n有序传输机制（4.4.2）\n序列号+滑动窗口 ：确保跨多QP的乱序到达消息能重组为严格顺序\n即时数据编码 ：利用IBV_WR_RDMA_WRITE_WITH_IMM的32位immediate field：\n位0-23：序列号\n位31：最终片段标记\nFast Path优化 ：高频小消息直接走专用QP（QP0），绕过乱序跟踪逻辑，降低CPU开销\n组会分享资料\n\n新建 Microsoft PowerPoint 演示文稿.pptx\n\n\n",
+  "blocks": [],
+  "node_token": "Bp17wF1zsiTZSdkWXpVcaOminad",
+  "parent_node_token": "ZMo5wcEhbiksWbkYOAzcoHNfnnE",
+  "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
+  "space_id": "7613776537935514838",
+  "type": "docx"
+}

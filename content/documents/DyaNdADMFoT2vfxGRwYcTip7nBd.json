@@ -1,0 +1,12 @@
+{
+  "id": "DyaNdADMFoT2vfxGRwYcTip7nBd",
+  "title": "backward问题定位",
+  "updated_at": "2026-03-05T14:22:18+00:00",
+  "raw_content": "backward问题定位\n核心工具：torch.autograd.set_detect_anomaly(True)（PyTorch 内置梯度计算异常检测工具）\n使用流程\n启用时机：在模型训练代码开头、backward ()执行前启用；\n代码写法：\nimport torch\n\n# 启用异常检测\ntorch.autograd.set_detect_anomaly(True)\n\n# 创建一个简单的模型\nx = torch.tensor([1.0, 2.0, 3.0], requires_grad=True)\ny = x * x\n\n# 计算梯度\ny.backward(torch.tensor([1.0, 1.0, 1.0]))\n\n# 打印梯度\nprint(x.grad)\n执行训练：正常运行训练流程，工具自动在反向传播时进行实时检查；若出现反向传播异常，工具会抛出含「异常位置 + 原因」的详细报错\n适用场景\n梯度计算错误：梯度结果不符合预期、梯度消失 / 爆炸等异常情况；\n反向不支持操作：部分算子在反向传播时未定义梯度或梯度计算不完整；\n设备不一致问题：张量分散在 CPU/GPU 不同设备，导致梯度计算失败；\n原地操作冲突：in-place 操作（如y += x）破坏梯度计算所需的张量版本，引发依赖错误。\n关键注意事项\n启用后会增加额外检查开销，导致训练速度变慢，仅建议调试阶段使用，正式训练需关闭\n优先关注「inplace operation」「gradient computation」「device mismatch」等关键词\n工具搭配：若单一工具无法解决问题，可结合 PyTorch 其他调试工具深化分析：\ntorch.autograd.gradcheck：验证梯度计算的数值正确性；\ntorch.autograd.profiler：分析梯度计算的性能瓶颈与操作链路；\n使用边界：仅针对梯度计算相关问题，若反向传播失败源于数据格式错误、显存溢出（非梯度依赖型）等，需结合其他调试手段。\n",
+  "blocks": [],
+  "node_token": "VVGfwmVigiCErEkZ1cHcq1Mgn9e",
+  "parent_node_token": "Lw1gwyduNi0ZSKkHYRncI6Bbn9c",
+  "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
+  "space_id": "7613776537935514838",
+  "type": "docx"
+}

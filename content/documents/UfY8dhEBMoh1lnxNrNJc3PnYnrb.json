@@ -1,0 +1,12 @@
+{
+  "id": "UfY8dhEBMoh1lnxNrNJc3PnYnrb",
+  "title": "跨vlan不通",
+  "updated_at": "2026-03-05T14:22:20+00:00",
+  "raw_content": "跨vlan不通\n可能的原因\n1. 丢ip\n体现为ib_write_bw找不到合适的gid，show_gids和ip addr show看不到信息\n网卡无感拉起\n修改后down掉再up，发现不会丢ip，但人为检测是短时恢复，即down掉后马上up起来\n现在在一台丢ip的节点上，观察到了以下日志：\nJan 22 10:35:00 wys-qk-server105 kernel: mlx5_core 0000:9e:00.1 ens5f1np1: Link down\nJan 22 11:26:40 wys-qk-server105 kernel: mlx5_core 0000:9e:00.1 ens5f1np1: Link up\n由于现场施工，这个丢IP的网卡down了将近一小时，这会不会是丢IP的原因\nimage2026-1-22_17-2-54.png\n\nimage2026-1-22_17-1-47.png\n\n2. 丢路由表\n可以用 ip rule 检查\nimage2026-1-22_17-6-50.png\n\n\n",
+  "blocks": [],
+  "node_token": "IKocwiPp3iV93GkHlkNc58BLnJf",
+  "parent_node_token": "MMEywuoqGiRd95kkPzOcHrxBn5d",
+  "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
+  "space_id": "7613776537935514838",
+  "type": "docx"
+}

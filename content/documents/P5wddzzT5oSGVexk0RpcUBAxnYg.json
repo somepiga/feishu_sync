@@ -1,0 +1,12 @@
+{
+  "id": "P5wddzzT5oSGVexk0RpcUBAxnYg",
+  "title": "UMA32 性能测试补充",
+  "updated_at": "2026-03-05T14:22:27+00:00",
+  "raw_content": "UMA32 性能测试补充\n\n1 Q按qhead=16折叠\n2 Q按qhead=8折叠\n1  Q按qhead=16折叠\nkv 只有1个head, deepseek在做TP8时， 每张卡处理 16q_head 1kvhead, 进一步每个die上处理 8q_head  1kv_head， die间存储的kvcache是完全重复的\n\n每张卡 处理的 batch * 16 head\numa16  每个die处理不同的head,   每个die共处理 batch * 8 head，   然后将这 把 8*batch 分每个spc,  qhead 折叠到 seq 维度 每个spc 处理 q*k =  [8, 576]*[576,H]\numa32  两个die统一处理， 把 batch * 16 head分每个spc,  qhead 折叠到 seq 维度, 每个spc 处理 q*k =  [16, 576]*[576,H]\nUma16  每个die 会重复  load 相同的kvhead\numa32 没有重复load, 只load一遍， 这个会有preload kcaceh到GMB, 之后 load k load v, 从gmb load.\n\nimage2025-9-19_17-44-11.png\n\n\n2  Q按qhead=8折叠\n简单修改，  只修改 kvcache 为 UMA32\nQ shape  NUMA  [Batch/16,  8,  576]*32   与 KV为 UMA16时 shape相同， 8qhaed折到H维度， 前后16spc处理不同的8个head\n\nimage2025-9-23_15-39-40.png\n\n\n\n\n\n\n附件： 测试记录\n\nGQA_deepseek_uma32.xlsx\n\n\n\n",
+  "blocks": [],
+  "node_token": "RCEqwXEbrijZbLkqxrlcc77HnGL",
+  "parent_node_token": "DdNcwPvstiGmgBktURpcLUTAnuf",
+  "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
+  "space_id": "7613776537935514838",
+  "type": "docx"
+}

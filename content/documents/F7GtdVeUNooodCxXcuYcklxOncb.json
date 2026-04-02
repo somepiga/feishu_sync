@@ -1,0 +1,12 @@
+{
+  "id": "F7GtdVeUNooodCxXcuYcklxOncb",
+  "title": "Flatten Tensor",
+  "updated_at": "2026-03-05T14:22:16+00:00",
+  "raw_content": "Flatten Tensor\nFlatten Tensor通过FlattenTensorDense算子将多个Tensor合并为一个一维的Buffer Tensor。这个一维Buffer Tensor具有以下特征：\n数据类型（dtype） ：与输入Tensor列表中的Tensor类型相同，即所有输入Tensor必须具有相同的dtype。\n形状（shape） ：合并后的Tensor形状为一维，失去输入Tensor列表的形状信息。\n内容 ：从输入Tensor中复制内容。\n支持的操作 ：支持narrow操作，可以从Flatten Tensor中根据给定的偏移量（offset）和大小（size）切片出一个新的Tensor，这个新Tensor与Flatten Tensor共享存储空间，并且可以参与后续的计算，包括原地（inplace）计算。还支持unflatten操作，可以根据给定的Tensor列表从Flatten Tensor中切片出所有子Tensor。\nFlatten Tensor的主要优势在于减少通信的拷贝操作。\n\n",
+  "blocks": [],
+  "node_token": "LXopwfajZikN8skEF5ucEwtNnjb",
+  "parent_node_token": "HErWwdR1WizUZAkEDLxc8foInlf",
+  "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
+  "space_id": "7613776537935514838",
+  "type": "docx"
+}

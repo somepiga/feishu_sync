@@ -1,0 +1,12 @@
+{
+  "id": "XXUidTcSKoi4s0xD0eSc03zlnTc",
+  "title": "捕获图",
+  "updated_at": "2026-03-05T14:22:15+00:00",
+  "raw_content": "捕获图\n\n上层入口\npython 层捕获入口\nC++ 侧核心对象\ncapture_begin\n准备 RNG\n比较 stream\n开始录制\n内存池复用（可选）\n驱动侧\n上层入口\n定义了上下文类  class graph(object):\n用法是 with torch.supa.graph(supa_graph, ...)\n在 __enter__ 的时候，会干三件事：\n1. 尽量腾出空间，避免捕获时内存碎片干扰\ntorch.supa.synchronize()\ngc.collect()\ntorch.supa.empty_cache()\n2. 把当前线程的“当前 stream”切到捕获用 stream\nself.stream_ctx = torch.supa.stream(self.capture_stream)\nself.stream_ctx.__enter__()\n3. 开始捕获（见下文）\nself.supa_graph.capture_begin(*self.pool)\npython 层捕获入口\nPython 层开始/结束（br_pytorch/torch_br/supa/graphs.py）\nSUPAGraph：语法糖，继承自SUPA cpp at::supa::SupaTaskGraph，提供 capture_begin / capture_end / replay\n\nimage2026-2-6_16-3-5.png\n\n\nC++ 侧核心对象\n类：at::supa::SupaTaskGraph\n本质上就是一个状态机：\nEmpty：还没捕获任何图\nExecutable：捕获结束，拿到了可执行 graph_exec_\n关键字段（理解这些就能看懂逻辑）\n- graph_：捕获到的原始图（临时）\n- has_graph_ / has_graph_exec_：当前是否有图/可执行图\n- capture_stream_：捕获时用的 stream\n- capture_gen_ / capture_dev_：捕获时的 RNG 和设备\n- mempool_id_：图内存池 ID（用于复用）\ncapture_begin\n做的是“切换到捕获状态 + 记录 RNG + 建立内存池 + 开始录制”。\n准备 RNG\n处理随机数种子的逻辑\nTBD\n比较 stream\n刚刚在python侧已经把stream切换到捕获专用流，现在要保证这个专用流不能是默认流，因为默认流是全局共享的，很多库/线程/隐式操作都会往默认流塞东西。\n即 stream != default_stream\n开始录制\nsuStreamBeginCapture(capture_stream_, suStreamCaptureModeRelaxed)\n内存池复用（可选）\n捕获图时，需要为图里的所有中间张量分配内存\n如果多张图共享同一内存池，中间 buffer 可以复用，速度快、内存更省\n SupaTaskGraph::capture_begin：\n  - 如果传入了 pool → 用它\n- 如果没传 → 自动创建一个 “专属池”\nif (pool.first != 0 || pool.second != 0) {\nmempool_id_ = pool;   // 共享池\n} else {\nmempool_id_ = {id_, 0}; // 自己的池\n}\n之后 SUPA 驱动/运行时库会把这些 kernel launch 按提交顺序记录成图节点\n驱动侧\n运行时直接以二进制的方式弄在镜像里，没法看到相关代码\n\n\n\n\n\n",
+  "blocks": [],
+  "node_token": "FtffwxVJqiFIBikyYJuclA8Qnhc",
+  "parent_node_token": "Atz7wXa2FiFJ3hkq7A2cM2oznTd",
+  "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
+  "space_id": "7613776537935514838",
+  "type": "docx"
+}

@@ -1,0 +1,12 @@
+{
+  "id": "TXVmdzHYRoX4kXxXG25cC2qSnFe",
+  "title": "尖峰问题",
+  "updated_at": "2026-03-05T14:22:23+00:00",
+  "raw_content": "尖峰问题\n1、现象描述\n在MMA测试中发现，对于K/W固定的时候，H是变化的，那么在某些shape下，MMA的性能会变得很差，但是在紧接着的下一个shape点，性能又会恢复正常。随着H的变大，整体性能呈现线性增长趋势，但是在某些点，会呈现尖峰现象。\n以llama2-70b为例，其MMA shape如下：\n\n\n\n\nH\n\nK\n\nW\n\nllama2-70b\n\nX\n\n2048\n\n8192\n\n\n\nX\n\n7168\n\n8192\n\nimage2024-8-12_16-6-49.png\n\n\n推理大模型_尖峰问题测试.xlsx\n",
+  "blocks": [],
+  "node_token": "TKpgwc2KWilQkNkM0SfcTakFnQc",
+  "parent_node_token": "X8nlwrO7sim5tJkspUHcumyInlb",
+  "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
+  "space_id": "7613776537935514838",
+  "type": "docx"
+}

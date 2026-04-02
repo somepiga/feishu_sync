@@ -1,0 +1,12 @@
+{
+  "id": "UJOad6ZarohjDDxXieVcaBa8n4c",
+  "title": "通信相关",
+  "updated_at": "2026-03-05T14:22:18+00:00",
+  "raw_content": "通信相关\n目标是优化all2all算子（其他算子也可以顺带优化一下），场景为跨机。\n",
+  "blocks": [],
+  "node_token": "Qx3KwLdH6i9yOwk0PJgcNMCxnng",
+  "parent_node_token": "ZMo5wcEhbiksWbkYOAzcoHNfnnE",
+  "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
+  "space_id": "7613776537935514838",
+  "type": "docx"
+}

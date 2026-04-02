@@ -1,0 +1,12 @@
+{
+  "id": "MNywdiohIoVramx67RGc9NMunVf",
+  "title": "基础带宽测试",
+  "updated_at": "2026-03-05T14:22:20+00:00",
+  "raw_content": "基础带宽测试\n一、测试拥塞现象\n\n\n测试方式\n\n结果\n\n128机两两同号卡8卡双向通信（测试叶子交换机承受能力）\n\nimage2026-1-16_10-51-1.png\n\n\n\n\n\n问题解决\n\n\n问题\n\n解决方法\n\nimage2026-1-16_11-49-27.png\n\n\n先看免密配置是否正确，config和mpi指令需要对应\n保证没有其他人同时使用机器\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
+  "blocks": [],
+  "node_token": "Qriqwwuw4iBak8kqKbrcJJhbnpc",
+  "parent_node_token": "MMEywuoqGiRd95kkPzOcHrxBn5d",
+  "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
+  "space_id": "7613776537935514838",
+  "type": "docx"
+}

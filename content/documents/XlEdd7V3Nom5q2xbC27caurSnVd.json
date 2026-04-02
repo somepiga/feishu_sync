@@ -1,0 +1,12 @@
+{
+  "id": "XlEdd7V3Nom5q2xbC27caurSnVd",
+  "title": "[GQA] mcast 测试",
+  "updated_at": "2026-03-05T14:22:27+00:00",
+  "raw_content": "[GQA] mcast 测试\n\n1.模型配置\nllama2 70B 4卡16spc：        单卡q_head= 16， kv_head= 2\ncodellama 33B 2卡12spc：  单卡q_head= 32， kv_head= 4\n当前可以总结出， Q 8个head 对应 KV 1个head\n\n2.mcast 配置\nSUPA中可用的mcast配置\n/// \\brief Load merge scope mode\nenum LOAD_MERGE_SCOPE_MODE {\n    LOAD_MERGE_SCOPE_OFF,\n    LOAD_MERGE_SCOPE_VTG,\n    LOAD_MERGE_SCOPE_DTG,\n    LOAD_MERGE_SCOPE_PEER,\n}\n\nimage2024-1-5_17-16-3.png \n\nimage2024-1-5_17-16-18.png \n\nimage2024-1-5_17-16-36.png\n\n\nKMD mcast参数 biren_mcast_vf_num 的配置\nKMD 加载方法及参数解析 - SoftwareSpace - Confluence (birentech.com)\n\n3. 测试结果\n测试case:\nMHA_test<BF16>(8, 1, 32, 32, 639, 1);  //  BF16，MHA， 每个spc 处理 16个 head, seq=640\nMHA_test<FP32>(8, 1, 32, 32, 639, 1);  //  FP32，MHA， 每个spc 处理 16个 head, seq=640\nMHA_test<BF16>(8, 1, 32, 4, 639, 1);    //  BF16，GQA， 每个spc 处理 16个 head, seq=640\nMHA_test<FP32>(8, 1, 32, 4, 639, 1);    //  FP32，GQA， 每个spc 处理 16个 head, seq=640\na.  精度\n将GQA ldm kv cache 的Load merge scope分别配置为 DTG/VTG/PEER， 结果全部mismatch， 需要和硬件check\nb. 性能\n忽略结果的正确性，并将reorder部分代码注释，分析attention部分性能\n*NUMA/UMA 指S*V的输出是NUMA/UMA\n\n\n\n\nUMA\n\nNUMA\n\nBF16，MHA\n\n175669\n\n176130\n\nFP32，MHA\n\n303091\n\n304830\n\n\n\nNUMA\n\nOFF\n\nDTG\n\nVTG\n\nPEER\n\nBF16，GQA\n\n245582\n\n123232\n\n123003\n\n164730\n\nFP32，GQA\n\n445940\n\n1839456\n\n216148\n\n295746\n\n\nUMA\n\nOFF\n\nDTG\n\nVTG\n\nPEER\n\nBF16，GQA\n\n246277\n\n123505\n\n125972\n\n164121\n\nFP32，GQA\n\n447017\n\n183940\n\n216919\n\n302294\n\n4. biren_mcast_vf_num=2测试\nimage2024-1-8_19-47-5.png\n\nimage2024-1-8_19-47-38.png\n\n测试结果： 需要将kv cache设置为UMA8\n\n\nKV UMA8\n\nOFF\n\nDTG\n\nVTG\n\nPEER\n\nBF16，GQA\n\n152425\n\n128628\n\n125934\n\n137038\n\nFP32，GQA\n\n262820\n\n168123\n\n196883\n\n236328\n5设置命令\n查寻：  cat /sys/module/biren/parameters/biren_mcast_vf_num\n设置：\nrmmod biren\nmodprobe biren biren_mcast_vf_num=2\n",
+  "blocks": [],
+  "node_token": "TB63wD1Ywiws8kkSChWcRFgAngd",
+  "parent_node_token": "JFOJwBTm1iCveTk4g1jccKLLnFb",
+  "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
+  "space_id": "7613776537935514838",
+  "type": "docx"
+}

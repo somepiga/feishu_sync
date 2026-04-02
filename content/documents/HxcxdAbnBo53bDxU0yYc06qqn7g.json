@@ -1,0 +1,12 @@
+{
+  "id": "HxcxdAbnBo53bDxU0yYc06qqn7g",
+  "title": "die间DP",
+  "updated_at": "2026-03-11T12:51:45+00:00",
+  "raw_content": "die间DP\n背景\n当前使用的内存方案为 所有的weight，grad，optimizer state都用SB存储，可视作die间tp。\n（？可能是SB(1)的方案吗？）\ndie间dp方案\n所有的weight，grad使用BB存储，optimizer state都用BB或SB存储，其中optimizer state为BB则为zero0，optimizer state为SB则为zero1。\n822242d3-8775-417e-967b-f4f31b5c8f41.png\n\n上图为zero1方案，总参数量记为 X，显存差异如下\n\n\nTensor名称\n\ndie 间 TP\n\ndie 间 DP\n\ndie 间 zero1\n\ndie 间 zero2（不保存bf16 grad）\n\nbf16 weight\n\nX * 2\n\nX * 4\n\nX * 4\n\nX * 4\n\nbf16 grad\n\nX * 2\n\nX * 4\n\nX * 4\n\n0\n\nfp32 grad\n\nX * 4\n\nX * 8\n\nX * 4\n\nX * 4\n\nfp32 weight\n\nX * 4\n\nX * 8\n\nX * 4\n\nX * 4\n\nfp32  momentum\n\nX * 4\n\nX * 8\n\nX * 4\n\nX * 4\n\nfp32  variance\n\nX * 4\n\nX * 8\n\nX * 4\n\nX * 4\n\ntotal\n\nX * 20\n\nX * 40\n\nX * 24\n\nX * 20\n",
+  "blocks": [],
+  "node_token": "KiOSwFwq6iAR89ktuapcGCirnZd",
+  "parent_node_token": "HErWwdR1WizUZAkEDLxc8foInlf",
+  "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
+  "space_id": "7613776537935514838",
+  "type": "docx"
+}
