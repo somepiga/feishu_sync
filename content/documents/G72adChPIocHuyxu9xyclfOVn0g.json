@@ -3,10 +3,13 @@
   "title": "Audit",
   "updated_at": "2026-03-05T14:22:20+00:00",
   "raw_content": "Audit\n参考\nhttps://help.aliyun.com/zh/ecs/support/linux-system-uses-the-audit-tool-to-configure-operation-audit\n",
+  "render_html": "<p>参考</p><p>https://help.aliyun.com/zh/ecs/support/linux-system-uses-the-audit-tool-to-configure-operation-audit</p>",
+  "assets": [],
   "blocks": [],
   "node_token": "AkN7wmuNxitJtZkMb5RcrxYZnje",
   "parent_node_token": "MMEywuoqGiRd95kkPzOcHrxBn5d",
   "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
   "space_id": "7613776537935514838",
-  "type": "docx"
+  "type": "docx",
+  "sync_format_version": 4
 }

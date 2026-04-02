@@ -3,10 +3,28 @@
   "title": "exp2 不用高精度; 代码附近load store pingpong",
   "updated_at": "2026-03-05T14:22:28+00:00",
   "raw_content": "exp2 不用高精度; 代码附近load store pingpong\n基础信息：\n基于kernel ： Page_Attn_chunk_decode_ds_KVUMA\n平台：br166\n验证用例：\nEXPECT_TRUE((testGQA_chunk_prefill_packing_no_align<BF16, mask_mode_causal, UMAMemType, OutMemType_NUMA, UMAMemType, UMAMemType, true, false>(\n0, 64, 1024, 1024, max_num_token, window_size, 1, 64, 1, 576, spc_num, die_num, repeat_time, warmup_time)\n.pass));\nEXPECT_TRUE((testGQA_chunk_prefill_packing_no_align<BF16, mask_mode_causal, UMAMemType, OutMemType_NUMA, UMAMemType, UMAMemType, true, false>(\n0, 128, 1024, 1024, max_num_token, window_size, 1, 64, 1, 576, spc_num, die_num, repeat_time, warmup_time)\n.pass));\nEXPECT_TRUE((testGQA_chunk_prefill_packing_no_align<BF16, mask_mode_causal, UMAMemType, OutMemType_NUMA, UMAMemType, UMAMemType, true, false>(\n0, 192, 1024, 1024, max_num_token, window_size, 1, 64, 1, 576, spc_num, die_num, repeat_time, warmup_time)\n.pass));\nEXPECT_TRUE((testGQA_chunk_prefill_packing_no_align<BF16, mask_mode_causal, UMAMemType, OutMemType_NUMA, UMAMemType, UMAMemType, true, false>(\n0, 256, 1024, 1024, max_num_token, window_size, 1, 64, 1, 576, spc_num, die_num, repeat_time, warmup_time)\n.pass));\nEXPECT_TRUE((testGQA_chunk_prefill_packing_no_align<BF16, mask_mode_causal, UMAMemType, OutMemType_NUMA, UMAMemType, UMAMemType, true, false>(\n0, 512, 1024, 1024, max_num_token, window_size, 1, 64, 1, 576, spc_num, die_num, repeat_time, warmup_time)\n.pass));\n\n\n优化代码：\n1）update vi使用pingpong\nimage2025-11-17_17-21-29.png\n\n\n性能结果：\nimage2025-11-17_17-27-1.png\n\n\n\n结论：该优化点无性能收益\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
+  "render_html": "<h2>基础信息：</h2><p>基于kernel ： Page_Attn_chunk_decode_ds_KVUMA</p><p>平台：br166</p><p>验证用例：</p><p>EXPECT_TRUE((testGQA_chunk_prefill_packing_no_align&lt;BF16, mask_mode_causal, UMAMemType, OutMemType_NUMA, UMAMemType, UMAMemType, true, false&gt;(<br>0, 64, 1024, 1024, max_num_token, window_size, 1, 64, 1, 576, spc_num, die_num, repeat_time, warmup_time)<br>.pass));<br>EXPECT_TRUE((testGQA_chunk_prefill_packing_no_align&lt;BF16, mask_mode_causal, UMAMemType, OutMemType_NUMA, UMAMemType, UMAMemType, true, false&gt;(<br>0, 128, 1024, 1024, max_num_token, window_size, 1, 64, 1, 576, spc_num, die_num, repeat_time, warmup_time)<br>.pass));<br>EXPECT_TRUE((testGQA_chunk_prefill_packing_no_align&lt;BF16, mask_mode_causal, UMAMemType, OutMemType_NUMA, UMAMemType, UMAMemType, true, false&gt;(<br>0, 192, 1024, 1024, max_num_token, window_size, 1, 64, 1, 576, spc_num, die_num, repeat_time, warmup_time)<br>.pass));<br>EXPECT_TRUE((testGQA_chunk_prefill_packing_no_align&lt;BF16, mask_mode_causal, UMAMemType, OutMemType_NUMA, UMAMemType, UMAMemType, true, false&gt;(<br>0, 256, 1024, 1024, max_num_token, window_size, 1, 64, 1, 576, spc_num, die_num, repeat_time, warmup_time)<br>.pass));<br>EXPECT_TRUE((testGQA_chunk_prefill_packing_no_align&lt;BF16, mask_mode_causal, UMAMemType, OutMemType_NUMA, UMAMemType, UMAMemType, true, false&gt;(<br>0, 512, 1024, 1024, max_num_token, window_size, 1, 64, 1, 576, spc_num, die_num, repeat_time, warmup_time)<br>.pass));</p><p>&nbsp;</p><p>&nbsp;</p><h2>优化代码：</h2><p>1）update vi使用pingpong</p><figure class=\"doc-image\"><img src=\"content/media/Nbl4bp0Ero0PAOxmEWOcVtcZngb.png\" alt=\"image\" loading=\"lazy\" width=\"1467\" height=\"1055\"></figure><p>&nbsp;</p><p>性能结果：</p><figure class=\"doc-image\"><img src=\"content/media/AhnObPbuRoutd2xYtiNc5FOtnsX.png\" alt=\"image\" loading=\"lazy\" width=\"1026\" height=\"335\"></figure><p>&nbsp;</p><p>&nbsp;</p><p>结论：该优化点无性能收益</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p>",
+  "assets": [
+    {
+      "token": "Nbl4bp0Ero0PAOxmEWOcVtcZngb",
+      "name": "image2025-11-17_17-21-29.png",
+      "path": "content/media/Nbl4bp0Ero0PAOxmEWOcVtcZngb.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "AhnObPbuRoutd2xYtiNc5FOtnsX",
+      "name": "image2025-11-17_17-27-1.png",
+      "path": "content/media/AhnObPbuRoutd2xYtiNc5FOtnsX.png",
+      "content_type": "image/png",
+      "type": "image"
+    }
+  ],
   "blocks": [],
   "node_token": "Q9KHwtIoMiMnGzkGWoTcxJ35nGc",
   "parent_node_token": "FKeVw0mzhifcgskAcHZcGnPUnGh",
   "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
   "space_id": "7613776537935514838",
-  "type": "docx"
+  "type": "docx",
+  "sync_format_version": 4
 }

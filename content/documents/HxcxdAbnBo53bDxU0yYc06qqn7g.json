@@ -3,10 +3,21 @@
   "title": "die间DP",
   "updated_at": "2026-03-11T12:51:45+00:00",
   "raw_content": "die间DP\n背景\n当前使用的内存方案为 所有的weight，grad，optimizer state都用SB存储，可视作die间tp。\n（？可能是SB(1)的方案吗？）\ndie间dp方案\n所有的weight，grad使用BB存储，optimizer state都用BB或SB存储，其中optimizer state为BB则为zero0，optimizer state为SB则为zero1。\n822242d3-8775-417e-967b-f4f31b5c8f41.png\n\n上图为zero1方案，总参数量记为 X，显存差异如下\n\n\nTensor名称\n\ndie 间 TP\n\ndie 间 DP\n\ndie 间 zero1\n\ndie 间 zero2（不保存bf16 grad）\n\nbf16 weight\n\nX * 2\n\nX * 4\n\nX * 4\n\nX * 4\n\nbf16 grad\n\nX * 2\n\nX * 4\n\nX * 4\n\n0\n\nfp32 grad\n\nX * 4\n\nX * 8\n\nX * 4\n\nX * 4\n\nfp32 weight\n\nX * 4\n\nX * 8\n\nX * 4\n\nX * 4\n\nfp32  momentum\n\nX * 4\n\nX * 8\n\nX * 4\n\nX * 4\n\nfp32  variance\n\nX * 4\n\nX * 8\n\nX * 4\n\nX * 4\n\ntotal\n\nX * 20\n\nX * 40\n\nX * 24\n\nX * 20\n",
+  "render_html": "<h2>背景</h2><p>当前使用的内存方案为 所有的weight，grad，optimizer state都用SB存储，可视作die间tp。</p><p>（？可能是SB(1)的方案吗？）</p><h2>die间dp方案</h2><p>所有的weight，grad使用BB存储，optimizer state都用BB或SB存储，其中optimizer state为BB则为zero0，optimizer state为SB则为zero1。</p><figure class=\"doc-image\"><img src=\"content/media/HDI8b2k7Vop1FoxjqCdcFDXTnLd.bin\" alt=\"image\" loading=\"lazy\" width=\"1240\" height=\"724\"></figure><p>上图为zero1方案，总参数量记为 X，显存差异如下</p><div class=\"doc-table-wrap\"><table class=\"doc-table\"><tr><td><p>Tensor名称</p></td><td><p>die 间 TP</p></td><td><p>die 间 DP</p></td><td><p>die 间 zero1</p></td><td><p>die 间 zero2（不保存bf16 grad）</p></td></tr><tr><td><p>bf16 weight</p></td><td><p>X * 2</p></td><td><p>X * 4</p></td><td><p>X * 4</p></td><td><p>X * 4</p></td></tr><tr><td><p>bf16 grad</p></td><td><p>X * 2</p></td><td><p>X * 4</p></td><td><p>X * 4</p></td><td><p>0</p></td></tr><tr><td><p>fp32 grad</p></td><td><p>X * 4</p></td><td><p>X * 8</p></td><td><p>X * 4</p></td><td><p>X * 4</p></td></tr><tr><td><p>fp32 weight</p></td><td><p>X * 4</p></td><td><p>X * 8</p></td><td><p>X * 4</p></td><td><p>X * 4</p></td></tr><tr><td><p>fp32  momentum</p></td><td><p>X * 4</p></td><td><p>X * 8</p></td><td><p>X * 4</p></td><td><p>X * 4</p></td></tr><tr><td><p>fp32  variance</p></td><td><p>X * 4</p></td><td><p>X * 8</p></td><td><p>X * 4</p></td><td><p>X * 4</p></td></tr><tr><td><p>total</p></td><td><p>X * 20</p></td><td><p>X * 40</p></td><td><p>X * 24</p></td><td><p>X * 20</p></td></tr></table></div>",
+  "assets": [
+    {
+      "token": "HDI8b2k7Vop1FoxjqCdcFDXTnLd",
+      "name": "822242d3-8775-417e-967b-f4f31b5c8f41",
+      "path": "content/media/HDI8b2k7Vop1FoxjqCdcFDXTnLd.bin",
+      "content_type": "application/octet-stream",
+      "type": "image"
+    }
+  ],
   "blocks": [],
   "node_token": "KiOSwFwq6iAR89ktuapcGCirnZd",
   "parent_node_token": "HErWwdR1WizUZAkEDLxc8foInlf",
   "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
   "space_id": "7613776537935514838",
-  "type": "docx"
+  "type": "docx",
+  "sync_format_version": 4
 }

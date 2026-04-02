@@ -3,10 +3,13 @@
   "title": "load key cache sync_channel pingpong 调整",
   "updated_at": "2026-03-05T14:22:28+00:00",
   "raw_content": "load key cache sync_channel pingpong 调整\n\nhttps://gitlab.birentech.com/software/suInfer_LLM/-/merge_requests/2865\n",
+  "render_html": "<p>&nbsp;</p><p>https://gitlab.birentech.com/software/suInfer_LLM/-/merge_requests/2865</p>",
+  "assets": [],
   "blocks": [],
   "node_token": "OX0fwG8tVigJm1kdBlxcsJajnDh",
   "parent_node_token": "FKeVw0mzhifcgskAcHZcGnPUnGh",
   "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
   "space_id": "7613776537935514838",
-  "type": "docx"
+  "type": "docx",
+  "sync_format_version": 4
 }

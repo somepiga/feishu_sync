@@ -3,10 +3,161 @@
   "title": "[MHA]波形&pfc分析",
   "updated_at": "2026-03-05T14:22:27+00:00",
   "raw_content": "[MHA]波形&pfc分析\n\n\ndata\n\nshape\n\nactual cycles\n\nwave_cycles\n\npath\n\nissue &analysis\n\nopt action\n\nactual gain\n\n2023-12-26\n\nQK结果输出到GMB\n\n\n\nper spc ：\nbatch 16\nseq_len  640\nhead_size: 128\ndtype：fp32\n\n\n373us\n\nwave：381us(spc0)\n\nimage2023-12-26_16-48-24.png\n\n\n1 .\nimage2023-12-26_16-58-0.png\n\nspc0 后面有较长尾巴，约 10us\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n2 \nimage2023-12-26_17-21-26.png\n\nimage2023-12-26_17-28-46.png\n\n\ntcore busy  299 us ， 16个batch之间有空白：初步分析为每个sample  有bar 的等待，每个间隙约4.4us  ，共计约 4.4*15~=66us      占比66/381   ~=17.3%\n查看指令，每个mma 都有fill1；\n\n\n\nmma1，写gmb 供 softmaxt 使用，不用fill1，可以改为ackgmb 即可\nmma2 写出后是下一个kernel 使用，无需 fence ，可以删除；\n\n\n\n\n\n\n\n\n\n\n\n\n\n3. \nimage2023-12-26_17-58-24.png\n\n计算完成mha完成后仍有70us,  经分析代码，mha 完成后要 dtg sync 16spc 数据，再load 回做typecast+reshape，将总shape spc_num* N*1*128  →  spc_num* N*1* 128*head_num/spc_num ，fp32→bf16   70/381~=18.37%\n\nmma2 输出为bf16 ,不用typecast；\n当spc_num* N*1* 128*head_num/spc_num  能整除时，可以直接输出，不用reshape，可以消除dtg sync\n第2点需要图上对数据排布做修改\n\n\n\n\n\n\n\n\n\npfc\n\n\n\n\n4. pfc  eu 不平衡问题\nimage2023-12-28_10-45-46.png\n\n\n将 tcore 指令放到eu1 ,eu2,eu3 , 避免eu 不平衡（eu0 要做softmax）\n\n\n\n\n\n\n\n\n\n\n\n\n\n5.pfc  spc 不平衡    spc12最快， spc2、3 慢约10%\n\n\n\n\n\n2023-12-27\n\n QK结果输出到GMB;\n3EU实现；\nS*V直接写U#,去掉了fll1\n\nper spc ：\nbatch 16\nseq_len  640\nhead_size: 128\ndtype：BF16\n\n212us\n\nwave：212us(spc0)\n\nimage2023-12-27_14-40-23.png\n\n\n1 \nimage2023-12-27_14-42-43.png\n\n去掉fll1后mma之间没有空隙\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n2 长尾未去除，依然严重\nimage2023-12-27_14-45-17.png\n\n\n\n\n\n\n\n\n\n\n\n\nPFC\n\n对比with/without reorderPFC数据：（包含了FP32 BF16两个kernel）\n/workspace/e00474/SUPA/supa-test/perf_result_with_reorder/mydb.sqlite\n/workspace/e00474/SUPA/supa-test/perf_result_without_reorder/mydb.sqlite\n\nimage2023-12-27_14-51-34.png \n\nvs \nimage2023-12-27_14-52-13.png\n\n\nwithout_reorder kernel中去掉了DTG同步以及后边的reorder(暂不考虑正确性)，说明reorder只占了约8~9us, 不是造成长尾的主要原因\n\n\n\n\n\n2023-12-29\n\nper spc ：\nbatch 2\nseq_len  128\nhead_size: 128\ndtype：BF16\n\ncbi cycle(max): 34us\n\nwave:  31us\n\nimage2023-12-29_9-42-39.png\n\n\n总耗时31us\nimage2023-12-29_9-43-1.png\n\n2. 开始执行到真正执行第一个ldmma占用了10us, 需要分析该段时间spc行为\nimage2023-12-29_9-44-2.png\n\n3. tcore运行时间15us, 只有两个batch, mma无法完全掩盖softmax\nimage2023-12-29_9-45-36.png\n\n4. tcore执行结束到spc运行结束，一共4.5us, dtg+reorder同步时间以及spc不均衡导致的等待时间\nimage2023-12-29_9-46-56.png\n\n\n针对2， yukun老师的解释：\nimage2023-12-29_15-54-54.png\n\nimage2023-12-29_15-55-14.png\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nFP32, 16*640 /spc\n\n1226 (batch pipline, QKtoGMB)\n\n0103(batch pipline, QKtoGMB，3EU, without fll1)\n\n0103(batch pipline, QKtoGMB，3EU, without fll1)  flushl2\n\nshape per spc\n\nQ:[16, 1, 640]\nKV:[16,512, 640]\n\nQ:[16, 1, 640]\nKV:[16,512, 640]\n\n\n\nPFC: cycle\n\n372us\n\n310us\n\n311us\n\nPFC: 负载\n\nimage2024-1-3_19-14-19.png\n\n\nimage2024-1-3_19-29-12.png\n\n\nimage2024-1-3_19-33-22.png\n\n\n\n\nl2_read balance % = 28.04%\nl2_write balance % = 10.00%\nL2 Read Requests = 22696\nL2 Read Hit Rate = 5.99%\nL2 Write Requests = 1440\nL2 Write Hit Rate = 81.70%\nLoadA Bytes = 3145728\nLoadB Bytes = 15728640\nLoadA/B Traffic(Bytes) = 18874368\nLoadA/B BW(Bytes/Cycle) = 69.64\n\nl2_read balance % = 6.66%\nl2_write balance % = 10.00%\nL2 Read Requests = 21148\nL2 Read Hit Rate = 2.56%\nL2 Write Requests = 1440\nL2 Write Hit Rate = 30.44%\nLoadA Bytes = 5767168\nLoadB Bytes = 15728640\nLoadA/B Traffic(Bytes) = 21495808\nLoadA/B BW(Bytes/Cycle) = 75.43\n\nl2_read balance % = 0.64%\nl2_write balance % = 10.00%\nL2 Read Requests = 219412\nL2 Read Hit Rate = 0.26%\nL2 Write Requests = 1440\nL2 Write Hit Rate = 84.99%\nLoadA Bytes = 5767168\nLoadB Bytes = 15728640\nLoadA/B Traffic(Bytes) = 21495808\nLoadA/B BW(Bytes/Cycle) = 75.34\n",
+  "render_html": "<div class=\"doc-table-wrap\"><table class=\"doc-table\"><tr><td><p>data</p></td><td><p>shape</p></td><td><p>actual cycles</p></td><td><p>wave_cycles</p></td><td><p>path</p></td><td><p>issue &amp;analysis</p></td><td><p>opt action</p></td><td><p>actual gain</p></td></tr><tr><td rowspan=\"4\"><p>2023-12-26</p><p><br>QK结果输出到GMB<br><br></p></td><td rowspan=\"3\"><p>per spc ：</p><p>batch 16<br>seq_len  640<br>head_size: 128</p><p><strong>dtype：fp32</strong></p><p>&nbsp;</p></td><td><p>373us</p></td><td><p>wave：381us(spc0)</p></td><td><figure class=\"doc-image\"><img src=\"content/media/F4aYbkGkBoYjekxvFIbcRqZMnjd.png\" alt=\"image\" loading=\"lazy\" width=\"1041\" height=\"169\"></figure></td><td><p>1 .</p><figure class=\"doc-image\"><img src=\"content/media/Vj7VbsH3MoYtOhxrr1lcEyPSnXe.png\" alt=\"image\" loading=\"lazy\" width=\"1928\" height=\"46\"></figure><p>spc0 后面有较长尾巴，约 10us</p></td><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td></tr><tr><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td><td><p>2 </p><figure class=\"doc-image\"><img src=\"content/media/TSh0bcCPsoYmHYxnmjDcMGllnah.png\" alt=\"image\" loading=\"lazy\" width=\"1942\" height=\"155\"></figure><figure class=\"doc-image\"><img src=\"content/media/ArC2bLIRRoBhPixP02Wc7hoxnEe.png\" alt=\"image\" loading=\"lazy\" width=\"1937\" height=\"172\"></figure><p>&nbsp;</p><p>tcore busy  299 us ， 16个batch之间有空白：初步分析为每个sample  有bar 的等待，每个间隙约4.4us  ，共计约 4.4*15~=66us      占比66/381   ~=17.3%<br>查看指令，每个mma 都有fill1；<br></p></td></tr><tr><td><p>&nbsp;</p><p>mma1，写gmb 供 softmaxt 使用，不用fill1，可以改为ackgmb 即可</p><p>mma2 写出后是下一个kernel 使用，无需 fence ，可以删除；</p></td><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td></tr><tr><td><p>&nbsp;</p></td><td><p>3. </p><figure class=\"doc-image\"><img src=\"content/media/HLMXbd3ykot7flxNDsqcf7ffnFg.png\" alt=\"image\" loading=\"lazy\" width=\"1925\" height=\"461\"></figure><p>计算完成mha完成后仍有70us,  经分析代码，mha 完成后要 <strong>dtg </strong>sync 16spc 数据，再load 回做typecast+reshape，将总shape spc_num* N*1*128  →  spc_num* N*1* 128*head_num/spc_num ，fp32→bf16   70/381~=18.37%</p></td><td><ol><li>mma2 输出为bf16 ,不用typecast；</li><li>当spc_num* N*1* 128*head_num/spc_num  能整除时，可以直接输出，不用reshape，可以消除dtg sync</li></ol><p>第2点需要图上对数据排布做修改</p></td><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td></tr><tr><td rowspan=\"2\"><p>pfc<br></p></td><td><p>&nbsp;</p></td><td><p>4. pfc  eu 不平衡问题</p><figure class=\"doc-image\"><img src=\"content/media/ZObDbBceZoiig2xu2kKcmVEOnrg.png\" alt=\"image\" loading=\"lazy\" width=\"2488\" height=\"255\"></figure></td><td><ol><li>将 tcore 指令放到eu1 ,eu2,eu3 , 避免eu 不平衡（eu0 要做softmax）</li></ol></td><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td></tr><tr><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td><td><p>5.pfc  spc 不平衡    spc12最快， spc2、3 慢约10%</p></td><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td><td rowspan=\"2\"><p>2023-12-27<br><br> QK结果输出到GMB;<br>3EU实现；<br>S*V直接写U#,去掉了fll1</p></td><td rowspan=\"2\"><p>per spc ：</p><p>batch 16<br>seq_len  640<br>head_size: 128</p><p><strong>dtype：BF16</strong></p></td></tr><tr><td rowspan=\"2\"><p>212us</p></td><td rowspan=\"2\"><p>wave：212us(spc0)</p></td><td rowspan=\"2\"><figure class=\"doc-image\"><img src=\"content/media/Q6I6biuVXoOnWIxqw1BcoKmWnje.png\" alt=\"image\" loading=\"lazy\" width=\"686\" height=\"143\"></figure></td><td><p>1 </p><figure class=\"doc-image\"><img src=\"content/media/F9DAbkoAWonNEdxfaa2csPbAn4d.png\" alt=\"image\" loading=\"lazy\" width=\"1843\" height=\"66\"></figure><p>去掉fll1后mma之间没有空隙</p></td><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td></tr><tr><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td></tr><tr><td><p>2 长尾未去除，依然严重</p><figure class=\"doc-image\"><img src=\"content/media/SHRQbDYEioVAehx4jJIc6yfKn1P.png\" alt=\"image\" loading=\"lazy\" width=\"2138\" height=\"68\"></figure></td><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td><td><p>PFC</p></td><td><p>对比with/without reorderPFC数据：（包含了FP32 BF16两个kernel）<br>/workspace/e00474/SUPA/supa-test/perf_result_with_reorder/mydb.sqlite<br>/workspace/e00474/SUPA/supa-test/perf_result_without_reorder/mydb.sqlite</p></td></tr><tr><td><figure class=\"doc-image\"><img src=\"content/media/VEahbSoEpoWZH7xjGZ5cb3iIn5f.png\" alt=\"image\" loading=\"lazy\" width=\"123\" height=\"122\"></figure><p>vs </p><figure class=\"doc-image\"><img src=\"content/media/YuRFbceihoAeGExyOPAcaiM8nLb.png\" alt=\"image\" loading=\"lazy\" width=\"107\" height=\"112\"></figure><p><br>without_reorder kernel中去掉了DTG同步以及后边的reorder(暂不考虑正确性)，说明reorder只占了约8~9us, 不是造成长尾的主要原因</p></td><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td><td><p>2023-12-29</p></td><td><p>per spc ：</p><p>batch 2<br>seq_len  128<br>head_size: 128</p><p><strong>dtype：BF16</strong></p></td><td><p>cbi cycle(max): 34us</p></td><td><p>wave:  31us</p></td><td><figure class=\"doc-image\"><img src=\"content/media/RIJwbiFwuoerKgx6RAcc6LW0nzd.png\" alt=\"image\" loading=\"lazy\" width=\"605\" height=\"338\"></figure></td></tr><tr><td><ol><li>总耗时31us</li></ol><figure class=\"doc-image\"><img src=\"content/media/X0mTbtYzWo8Yu3xiIB2cmVQZnbe.png\" alt=\"image\" loading=\"lazy\" width=\"865\" height=\"165\"></figure><p>2. 开始执行到真正执行第一个ldmma占用了10us, 需要分析该段时间spc行为</p><figure class=\"doc-image\"><img src=\"content/media/U2htbyft6oRya0x5xs1cPweEnsh.png\" alt=\"image\" loading=\"lazy\" width=\"865\" height=\"252\"></figure><p>3. tcore运行时间15us, 只有两个batch, mma无法完全掩盖softmax</p><figure class=\"doc-image\"><img src=\"content/media/Dp7WbCrProu92hxwvLscHAv5ncg.png\" alt=\"image\" loading=\"lazy\" width=\"865\" height=\"131\"></figure><p>4. tcore执行结束到spc运行结束，一共4.5us, dtg+reorder同步时间以及spc不均衡导致的等待时间</p><figure class=\"doc-image\"><img src=\"content/media/GS4jbKaDrosUsox1ysQcEkxbnTc.png\" alt=\"image\" loading=\"lazy\" width=\"865\" height=\"131\"></figure></td><td><p>针对2， yukun老师的解释：</p><figure class=\"doc-image\"><img src=\"content/media/FnvRb1u7bo5ObaxVZ1Kcuasqnfe.png\" alt=\"image\" loading=\"lazy\" width=\"312\" height=\"279\"></figure><figure class=\"doc-image\"><img src=\"content/media/Wh7XbSZ5yokhrcxFJ3ScOmvmnRe.png\" alt=\"image\" loading=\"lazy\" width=\"276\" height=\"281\"></figure></td><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td></tr></table></div><div class=\"doc-table-wrap\"><table class=\"doc-table\"><tr><td><p>FP32, 16*640 /spc</p></td><td><p>1226 (batch pipline, QKtoGMB)</p></td><td><p>0103(batch pipline, QKtoGMB，3EU, without fll1)</p></td><td><p>0103(batch pipline, QKtoGMB，3EU, without fll1)  flushl2</p></td></tr><tr><td><p>shape per spc</p></td><td><p>Q:[16, 1, 640]<br>KV:[16,512, 640]</p></td><td><p>Q:[16, 1, 640]<br>KV:[16,512, 640]</p></td><td><p>&nbsp;</p></td></tr><tr><td><p>PFC: cycle</p></td><td><p>372us</p></td><td><p>310us</p></td><td><p>311us</p></td></tr><tr><td><p>PFC: 负载</p></td><td><figure class=\"doc-image\"><img src=\"content/media/Eu9AbdUqeoNQUNxYwYAcoJj7nDf.png\" alt=\"image\" loading=\"lazy\" width=\"1067\" height=\"229\"></figure></td><td><figure class=\"doc-image\"><img src=\"content/media/THCzbFF85oTWvvxbbbdcZNPin1f.png\" alt=\"image\" loading=\"lazy\" width=\"1036\" height=\"231\"></figure></td><td><figure class=\"doc-image\"><img src=\"content/media/EoyXb5yWGoYpX6x5xjXccbY7nZc.png\" alt=\"image\" loading=\"lazy\" width=\"1056\" height=\"220\"></figure></td></tr><tr><td><p>&nbsp;</p></td><td><p>l2_read balance % = 28.04%<br>l2_write balance % = 10.00%</p><p>L2 Read Requests = 22696<br>L2 Read Hit Rate = 5.99%<br>L2 Write Requests = 1440<br>L2 Write Hit Rate = 81.70%</p><p>LoadA Bytes = 3145728<br>LoadB Bytes = 15728640<br>LoadA/B Traffic(Bytes) = 18874368<br>LoadA/B BW(Bytes/Cycle) = 69.64</p></td><td><p>l2_read balance % = 6.66%<br>l2_write balance % = 10.00%</p><p>L2 Read Requests = 21148<br>L2 Read Hit Rate = 2.56%<br>L2 Write Requests = 1440<br>L2 Write Hit Rate = 30.44%</p><p>LoadA Bytes = 5767168<br>LoadB Bytes = 15728640<br>LoadA/B Traffic(Bytes) = 21495808<br>LoadA/B BW(Bytes/Cycle) = 75.43</p></td><td><p>l2_read balance % = 0.64%<br>l2_write balance % = 10.00%</p><p>L2 Read Requests = 219412<br>L2 Read Hit Rate = 0.26%<br>L2 Write Requests = 1440<br>L2 Write Hit Rate = 84.99%</p><p>LoadA Bytes = 5767168<br>LoadB Bytes = 15728640<br>LoadA/B Traffic(Bytes) = 21495808<br>LoadA/B BW(Bytes/Cycle) = 75.34</p></td></tr></table></div>",
+  "assets": [
+    {
+      "token": "F4aYbkGkBoYjekxvFIbcRqZMnjd",
+      "name": "image2023-12-26_16-48-24.png",
+      "path": "content/media/F4aYbkGkBoYjekxvFIbcRqZMnjd.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "Vj7VbsH3MoYtOhxrr1lcEyPSnXe",
+      "name": "image2023-12-26_16-58-0.png",
+      "path": "content/media/Vj7VbsH3MoYtOhxrr1lcEyPSnXe.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "TSh0bcCPsoYmHYxnmjDcMGllnah",
+      "name": "image2023-12-26_17-21-26.png",
+      "path": "content/media/TSh0bcCPsoYmHYxnmjDcMGllnah.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "ArC2bLIRRoBhPixP02Wc7hoxnEe",
+      "name": "image2023-12-26_17-28-46.png",
+      "path": "content/media/ArC2bLIRRoBhPixP02Wc7hoxnEe.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "HLMXbd3ykot7flxNDsqcf7ffnFg",
+      "name": "image2023-12-26_17-58-24.png",
+      "path": "content/media/HLMXbd3ykot7flxNDsqcf7ffnFg.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "ZObDbBceZoiig2xu2kKcmVEOnrg",
+      "name": "image2023-12-28_10-45-46.png",
+      "path": "content/media/ZObDbBceZoiig2xu2kKcmVEOnrg.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "Q6I6biuVXoOnWIxqw1BcoKmWnje",
+      "name": "image2023-12-27_14-40-23.png",
+      "path": "content/media/Q6I6biuVXoOnWIxqw1BcoKmWnje.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "F9DAbkoAWonNEdxfaa2csPbAn4d",
+      "name": "image2023-12-27_14-42-43.png",
+      "path": "content/media/F9DAbkoAWonNEdxfaa2csPbAn4d.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "SHRQbDYEioVAehx4jJIc6yfKn1P",
+      "name": "image2023-12-27_14-45-17.png",
+      "path": "content/media/SHRQbDYEioVAehx4jJIc6yfKn1P.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "VEahbSoEpoWZH7xjGZ5cb3iIn5f",
+      "name": "image2023-12-27_14-51-34.png",
+      "path": "content/media/VEahbSoEpoWZH7xjGZ5cb3iIn5f.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "YuRFbceihoAeGExyOPAcaiM8nLb",
+      "name": "image2023-12-27_14-52-13.png",
+      "path": "content/media/YuRFbceihoAeGExyOPAcaiM8nLb.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "RIJwbiFwuoerKgx6RAcc6LW0nzd",
+      "name": "image2023-12-29_9-42-39.png",
+      "path": "content/media/RIJwbiFwuoerKgx6RAcc6LW0nzd.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "X0mTbtYzWo8Yu3xiIB2cmVQZnbe",
+      "name": "image2023-12-29_9-43-1.png",
+      "path": "content/media/X0mTbtYzWo8Yu3xiIB2cmVQZnbe.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "U2htbyft6oRya0x5xs1cPweEnsh",
+      "name": "image2023-12-29_9-44-2.png",
+      "path": "content/media/U2htbyft6oRya0x5xs1cPweEnsh.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "Dp7WbCrProu92hxwvLscHAv5ncg",
+      "name": "image2023-12-29_9-45-36.png",
+      "path": "content/media/Dp7WbCrProu92hxwvLscHAv5ncg.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "GS4jbKaDrosUsox1ysQcEkxbnTc",
+      "name": "image2023-12-29_9-46-56.png",
+      "path": "content/media/GS4jbKaDrosUsox1ysQcEkxbnTc.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "FnvRb1u7bo5ObaxVZ1Kcuasqnfe",
+      "name": "image2023-12-29_15-54-54.png",
+      "path": "content/media/FnvRb1u7bo5ObaxVZ1Kcuasqnfe.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "Wh7XbSZ5yokhrcxFJ3ScOmvmnRe",
+      "name": "image2023-12-29_15-55-14.png",
+      "path": "content/media/Wh7XbSZ5yokhrcxFJ3ScOmvmnRe.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "Eu9AbdUqeoNQUNxYwYAcoJj7nDf",
+      "name": "image2024-1-3_19-14-19.png",
+      "path": "content/media/Eu9AbdUqeoNQUNxYwYAcoJj7nDf.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "THCzbFF85oTWvvxbbbdcZNPin1f",
+      "name": "image2024-1-3_19-29-12.png",
+      "path": "content/media/THCzbFF85oTWvvxbbbdcZNPin1f.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "EoyXb5yWGoYpX6x5xjXccbY7nZc",
+      "name": "image2024-1-3_19-33-22.png",
+      "path": "content/media/EoyXb5yWGoYpX6x5xjXccbY7nZc.png",
+      "content_type": "image/png",
+      "type": "image"
+    }
+  ],
   "blocks": [],
   "node_token": "H4JrwKmTjip0mpklZOscgMBgnAr",
   "parent_node_token": "JFOJwBTm1iCveTk4g1jccKLLnFb",
   "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
   "space_id": "7613776537935514838",
-  "type": "docx"
+  "type": "docx",
+  "sync_format_version": 4
 }

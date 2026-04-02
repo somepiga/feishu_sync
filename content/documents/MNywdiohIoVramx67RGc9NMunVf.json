@@ -3,10 +3,28 @@
   "title": "基础带宽测试",
   "updated_at": "2026-03-05T14:22:20+00:00",
   "raw_content": "基础带宽测试\n一、测试拥塞现象\n\n\n测试方式\n\n结果\n\n128机两两同号卡8卡双向通信（测试叶子交换机承受能力）\n\nimage2026-1-16_10-51-1.png\n\n\n\n\n\n问题解决\n\n\n问题\n\n解决方法\n\nimage2026-1-16_11-49-27.png\n\n\n先看免密配置是否正确，config和mpi指令需要对应\n保证没有其他人同时使用机器\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
+  "render_html": "<p>一、测试拥塞现象</p><div class=\"doc-table-wrap\"><table class=\"doc-table\"><tr><td><p>测试方式</p></td><td><p>结果</p></td></tr><tr><td><p>128机两两同号卡8卡双向通信（测试叶子交换机承受能力）</p></td><td><figure class=\"doc-image\"><img src=\"content/media/PeYtbGuomovCIFx7Ww6cw87Gn0c.png\" alt=\"image\" loading=\"lazy\" width=\"1127\" height=\"903\"></figure></td></tr><tr><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td></tr></table></div><p>问题解决</p><div class=\"doc-table-wrap\"><table class=\"doc-table\"><tr><td><p>问题</p></td><td><p>解决方法</p></td></tr><tr><td><figure class=\"doc-image\"><img src=\"content/media/SPZMbo1yro2nJ2xdUqlcvco9njg.png\" alt=\"image\" loading=\"lazy\" width=\"470\" height=\"170\"></figure></td><td><ol><li>先看免密配置是否正确，config和mpi指令需要对应</li><li>保证没有其他人同时使用机器</li></ol></td></tr><tr><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td></tr><tr><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td></tr><tr><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td></tr><tr><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td></tr></table></div>",
+  "assets": [
+    {
+      "token": "PeYtbGuomovCIFx7Ww6cw87Gn0c",
+      "name": "image2026-1-16_10-51-1.png",
+      "path": "content/media/PeYtbGuomovCIFx7Ww6cw87Gn0c.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "SPZMbo1yro2nJ2xdUqlcvco9njg",
+      "name": "image2026-1-16_11-49-27.png",
+      "path": "content/media/SPZMbo1yro2nJ2xdUqlcvco9njg.png",
+      "content_type": "image/png",
+      "type": "image"
+    }
+  ],
   "blocks": [],
   "node_token": "Qriqwwuw4iBak8kqKbrcJJhbnpc",
   "parent_node_token": "MMEywuoqGiRd95kkPzOcHrxBn5d",
   "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
   "space_id": "7613776537935514838",
-  "type": "docx"
+  "type": "docx",
+  "sync_format_version": 4
 }

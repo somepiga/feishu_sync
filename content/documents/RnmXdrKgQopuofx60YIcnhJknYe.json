@@ -3,10 +3,70 @@
   "title": "Decoder使用3UMA方案测试",
   "updated_at": "2026-03-05T14:22:23+00:00",
   "raw_content": "Decoder使用3UMA方案测试\n一、背景\n原来的的方案时UNU，现在ZTE需要尝试使用3UMA的方案，现在改动 S8的代码来验证性能。\n二、测试\n使用llama2-7B的shape进行测试。\n\n\n\n\nUNU\n\n\n\nUUU\n\n\n\n（B, H, K, W)\n\n（1， 1， 4096， 4096）\n\n（1， 1， 11008， 4096）\n\n（1， 1， 4096， 4096）\n\n（1， 1， 11008， 4096）\n\nperSpc\n\n(1, 1, 4096, 256)\n\n(1, 1, 11008, 256)\n\n(1, 1, 4096, 256)\n\n(1, 1, 11008, 256)\n\nreload_a_gib\n\n1\n\n1\n\n1\n\n1\n\nreload_b_gib\n\n1\n\n1\n\n1\n\n1\n\nload_a_hbm_to_gib\n\n64 x 4096 x 2 / 60 = 8,738\n\n64 * 11008 x 2 / 60 = 23,483\n\n64 x 4096 x 2 / 60 = 8,738\n\n64 * 11008 x 2 / 60 = 23,483\n\nload_b_hbm_to_gib\n\n4096 x 256 x 1 / 40 = 26,214\n\n11008 * 256 * 1 / 40 = 70,451\n\n4096 x 256 x 1 / 30 =34952\n\n11008 * 256 * 1 / 30 = 93934\n\nmma\n\n64 * 4096 * 256 / 16384 = 4096\n\n64 * 11008 * 256 / 16384 = 11,008\n\n64 * 4096 * 256 / 16384 = 4096\n\n64 * 11008 * 256 / 16384 = 11,008\n\nwrite_l2\n\n64 * 256 * (4096 / 2048) / 256 = 128\n\n64 * 256 * (4096 / 2048) / 256 = 128\n\n64 * 256 * (4096 / 2048) / 256 = 128\n\n64 * 256 * (4096 / 2048) / 256 = 128\n\ntypecast\n\n64 * 256 * 2 / 30 = 1092\n\n64 * 256 * 2 / 30 = 1092\n\n64 * 256 * 2 / 30 = 1092\n\n64 * 256 * 2 / 30 = 1092\n\nresult\n\nmax(  Load_A_From_HBM_To_GIB + Load_B_From_HBM_To_GIB ,  Gemm ,  Acc_Write_C )  + typecast_Write_C\n= max( 8,738 + 26,214, 4096, 128) + 1092\n= 36,044\n\nmax(23483+70451, 11008,, 128) + 1092\n=  95,026\n\n=max( 8,738 + 34952, 4096, 128) + 1092\n= 44782\n\nmax(23483+93934, 11008,, 128) + 1092\n=  118509\n\n下降比例 %\n\n\n\n\n\n24.24%\n\n24.71%\n实际测试：\n\n\nshape\n\nUNU\n\n3UMA\n\n下降比例\n\nUNU\n\n3UMA\n\n(1, 1, 4096, 4096)\n\n41887\n\n65240\n\n55.75%\n\nimage2024-5-16_17-14-40.png\n\n\nimage2024-5-16_17-15-1.png\n\n\n(1, 1, 11008, 4096)\n\n92524\n\n138860\n\n33.36%\n\nimage2024-5-16_17-13-51.png\n\n\nimage2024-5-16_17-14-11.png\n\n\n(1, 1, 8192, 8192)\n\n127495\n\n230575\n\n80.85%\n\nimage2024-5-16_17-13-19.png\n\n\nimage2024-5-16_17-12-58.png\n\n\n(1, 1, 7168, 8192)\n\n99803\n\n190776\n\n91.1%\n\nimage2024-5-16_17-11-57.png\n\n\nimage2024-5-16_17-11-40.png\n\n\n",
+  "render_html": "<h2>一、背景</h2><p>原来的的方案时UNU，现在ZTE需要尝试使用3UMA的方案，现在改动 S8的代码来验证性能。</p><h2>二、测试</h2><p>使用llama2-7B的shape进行测试。</p><div class=\"doc-table-wrap\"><table class=\"doc-table\"><tr><td><p>&nbsp;</p></td><td colspan=\"2\"><p>UNU</p></td><td><p>&nbsp;</p></td><td colspan=\"2\"><p>UUU</p></td></tr><tr><td><p>&nbsp;</p></td><td><p>（B, H, K, W)</p></td><td><p>（1， 1， 4096， 4096）</p></td><td><p>（1， 1， 11008， 4096）</p></td><td><p>（1， 1， 4096， 4096）</p></td></tr><tr><td><p>（1， 1， 11008， 4096）</p></td><td><p>perSpc</p></td><td><p>(1, 1, 4096, 256)</p></td><td><p>(1, 1, 11008, 256)</p></td><td><p>(1, 1, 4096, 256)</p></td></tr><tr><td><p>(1, 1, 11008, 256)</p></td><td><p>reload_a_gib</p></td><td><p>1</p></td><td><p>1</p></td><td><p>1</p></td></tr><tr><td><p>1</p></td><td><p>reload_b_gib</p></td><td><p>1</p></td><td><p>1</p></td><td><p>1</p></td></tr><tr><td><p>1</p></td><td><p>load_a_hbm_to_gib</p></td><td><p>64 x 4096 x 2 / 60 = 8,738</p></td><td><p>64 * 11008 x 2 / 60 = 23,483</p></td><td><p>64 x 4096 x 2 / 60 = 8,738</p></td></tr><tr><td><p>64 * 11008 x 2 / 60 = 23,483</p></td><td><p>load_b_hbm_to_gib</p></td><td><p>4096 x 256 x 1 / 40 = 26,214</p></td><td><p>11008 * 256 * 1 / 40 = 70,451</p></td><td><p>4096 x 256 x 1 / 30 =34952</p></td></tr><tr><td><p>11008 * 256 * 1 / 30 = 93934</p></td><td><p>mma</p></td><td><p>64 * 4096 * 256 / 16384 = 4096</p></td><td><p>64 * 11008 * 256 / 16384 = 11,008</p></td><td><p>64 * 4096 * 256 / 16384 = 4096</p></td></tr><tr><td><p>64 * 11008 * 256 / 16384 = 11,008</p></td><td><p>write_l2</p></td><td><p>64 * 256 * (4096 / 2048) / 256 = 128</p></td><td><p>64 * 256 * (4096 / 2048) / 256 = 128</p></td><td><p>64 * 256 * (4096 / 2048) / 256 = 128</p></td></tr><tr><td><p>64 * 256 * (4096 / 2048) / 256 = 128</p></td><td><p>typecast</p></td><td><p>64 * 256 * 2 / 30 = 1092</p></td><td><p>64 * 256 * 2 / 30 = 1092</p></td><td><p>64 * 256 * 2 / 30 = 1092</p></td></tr><tr><td><p>64 * 256 * 2 / 30 = 1092</p></td><td><p>result</p></td><td><p>max(  <strong>Load_A_From_HBM_To_GIB + Load_B_From_HBM_To_GIB </strong>,  <strong>Gemm </strong>,  <strong>Acc_Write_C </strong>) <strong> + typecast_Write_C</strong></p><p><strong>= max( 8,738 + 26,214, 4096, 128) + 1092</strong></p><p><strong>= 36,044</strong></p></td><td><p><strong>max(23483+70451, 11008,, 128) + 1092</strong></p><p><strong>=  95,026</strong></p></td><td><p><strong>=max( 8,738 + 34952, 4096, 128) + 1092</strong></p><p><strong>= 44782</strong></p></td></tr><tr><td><p><strong>max(23483+93934, 11008,, 128) + 1092</strong></p><p><strong>=  118509</strong></p></td><td><p>下降比例 %</p></td><td><p>&nbsp;</p></td><td><p>&nbsp;</p></td><td><p>24.24%</p></td></tr></table></div><p>实际测试：</p><div class=\"doc-table-wrap\"><table class=\"doc-table\"><tr><td><p>shape</p></td><td><p>UNU</p></td><td><p>3UMA</p></td><td><p>下降比例</p></td><td><p>UNU</p></td><td><p>3UMA</p></td></tr><tr><td><p>(1, 1, 4096, 4096)</p></td><td><p>41887</p></td><td><p>65240</p></td><td><p>55.75%</p></td><td><figure class=\"doc-image\"><img src=\"content/media/C25UbTeFHoLuANx2RbXcNBsGnMf.png\" alt=\"image\" loading=\"lazy\" width=\"669\" height=\"925\"></figure></td><td><figure class=\"doc-image\"><img src=\"content/media/SjU3bQ3u5ojcIKxQkU6cVhltnhf.png\" alt=\"image\" loading=\"lazy\" width=\"668\" height=\"916\"></figure></td></tr><tr><td><p>(1, 1, 11008, 4096)</p></td><td><p>92524</p></td><td><p>138860</p></td><td><p>33.36%</p></td><td><figure class=\"doc-image\"><img src=\"content/media/De75bd9gHoPQeOxXlIdcdF3XnCb.png\" alt=\"image\" loading=\"lazy\" width=\"701\" height=\"913\"></figure></td><td><figure class=\"doc-image\"><img src=\"content/media/DSjCbtkx0o2J0txJnUicuMdonNg.png\" alt=\"image\" loading=\"lazy\" width=\"653\" height=\"912\"></figure></td></tr><tr><td><p>(1, 1, 8192, 8192)</p></td><td><p>127495</p></td><td><p>230575</p></td><td><p>80.85%</p></td><td><figure class=\"doc-image\"><img src=\"content/media/GPT9bfgFxoHkp2x3XKRcIgr0nef.png\" alt=\"image\" loading=\"lazy\" width=\"686\" height=\"909\"></figure></td><td><figure class=\"doc-image\"><img src=\"content/media/VelZbcbzfoL727xgPCbcW2kfnKh.png\" alt=\"image\" loading=\"lazy\" width=\"655\" height=\"916\"></figure></td></tr><tr><td><p>(1, 1, 7168, 8192)</p></td><td><p>99803</p></td><td><p>190776</p></td><td><p>91.1%</p></td><td><figure class=\"doc-image\"><img src=\"content/media/WbsrbniH6ohQgixyXJpccbepnrL.png\" alt=\"image\" loading=\"lazy\" width=\"910\" height=\"909\"></figure></td><td><figure class=\"doc-image\"><img src=\"content/media/B7XrbjFnXo3i0dx1vGOcKi3Cnfc.png\" alt=\"image\" loading=\"lazy\" width=\"741\" height=\"906\"></figure><p>&nbsp;</p></td></tr></table></div>",
+  "assets": [
+    {
+      "token": "C25UbTeFHoLuANx2RbXcNBsGnMf",
+      "name": "image2024-5-16_17-14-40.png",
+      "path": "content/media/C25UbTeFHoLuANx2RbXcNBsGnMf.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "SjU3bQ3u5ojcIKxQkU6cVhltnhf",
+      "name": "image2024-5-16_17-15-1.png",
+      "path": "content/media/SjU3bQ3u5ojcIKxQkU6cVhltnhf.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "De75bd9gHoPQeOxXlIdcdF3XnCb",
+      "name": "image2024-5-16_17-13-51.png",
+      "path": "content/media/De75bd9gHoPQeOxXlIdcdF3XnCb.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "DSjCbtkx0o2J0txJnUicuMdonNg",
+      "name": "image2024-5-16_17-14-11.png",
+      "path": "content/media/DSjCbtkx0o2J0txJnUicuMdonNg.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "GPT9bfgFxoHkp2x3XKRcIgr0nef",
+      "name": "image2024-5-16_17-13-19.png",
+      "path": "content/media/GPT9bfgFxoHkp2x3XKRcIgr0nef.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "VelZbcbzfoL727xgPCbcW2kfnKh",
+      "name": "image2024-5-16_17-12-58.png",
+      "path": "content/media/VelZbcbzfoL727xgPCbcW2kfnKh.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "WbsrbniH6ohQgixyXJpccbepnrL",
+      "name": "image2024-5-16_17-11-57.png",
+      "path": "content/media/WbsrbniH6ohQgixyXJpccbepnrL.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "B7XrbjFnXo3i0dx1vGOcKi3Cnfc",
+      "name": "image2024-5-16_17-11-40.png",
+      "path": "content/media/B7XrbjFnXo3i0dx1vGOcKi3Cnfc.png",
+      "content_type": "image/png",
+      "type": "image"
+    }
+  ],
   "blocks": [],
   "node_token": "F8b2wmMRCibF1fk0gHcc3LYRnkb",
   "parent_node_token": "X8nlwrO7sim5tJkspUHcumyInlb",
   "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
   "space_id": "7613776537935514838",
-  "type": "docx"
+  "type": "docx",
+  "sync_format_version": 4
 }

@@ -3,10 +3,13 @@
   "title": "SBP布局",
   "updated_at": "2026-03-05T14:22:14+00:00",
   "raw_content": "SBP布局\n可参考： https://docs.oneflow.org/master/parallelism/02_sbp.html\n SBP 布局（Split / Broadcast / Partial）。它描述“一个张量在多卡/多 die 上怎么切分或复制”\n- Broadcast：每个设备都有一份完整张量（复制）。\n- Split：沿张量的某个 axis 切分，各设备拿不同分片。\n- Partial：每个设备只保存部分“贡献”，需要做一次规约（默认是 Sum）才能得到完整结果。\nSBP 分割维度在单卡的 SPC 网格上\n示例demo\nPyTensor.create(\n          0,  # addr=0 => 仅分配，不从CPU拷贝\n          shape=[8, 4],\n          data_type=BRDataType.fp32,\n          layout=BRLayoutEnum.BUFFER_ANY,\n          mem_arch=BRMemArchEnum.UMA_AUTO,\n          device=0,\n          sbp=sbp,\n          axis=axis,\n      )\n",
+  "render_html": "<blockquote>可参考： https://docs.oneflow.org/master/parallelism/02_sbp.html</blockquote><p> SBP 布局（Split / Broadcast / Partial）。它描述“一个张量在多卡/多 die 上怎么切分或复制”</p><p>- Broadcast：每个设备都有一份完整张量（复制）。<br>- Split：沿张量的某个 axis 切分，各设备拿不同分片。<br>- Partial：每个设备只保存部分“贡献”，需要做一次规约（默认是 Sum）才能得到完整结果。</p><p><strong>SBP 分割维度在单卡的 SPC 网格上</strong></p><h2>示例demo</h2><pre><code>PyTensor.create(\n          0,  # addr=0 =&gt; 仅分配，不从CPU拷贝\n          shape=[8, 4],\n          data_type=BRDataType.fp32,\n          layout=BRLayoutEnum.BUFFER_ANY,\n          mem_arch=BRMemArchEnum.UMA_AUTO,\n          device=0,\n          sbp=sbp,\n          axis=axis,\n      )</code></pre>",
+  "assets": [],
   "blocks": [],
   "node_token": "PzOkwTybTiMtrwkgbejcH6bYntg",
   "parent_node_token": "TMFCwbW9FiKTlXk0skbc1whNnxb",
   "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
   "space_id": "7613776537935514838",
-  "type": "docx"
+  "type": "docx",
+  "sync_format_version": 4
 }

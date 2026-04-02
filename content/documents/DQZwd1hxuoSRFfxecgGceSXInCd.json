@@ -3,10 +3,13 @@
   "title": "moe 通信",
   "updated_at": "2026-03-05T14:22:22+00:00",
   "raw_content": "moe 通信\nPrefill\nDecode\n",
+  "render_html": "<h2>Prefill</h2><h2>Decode</h2>",
+  "assets": [],
   "blocks": [],
   "node_token": "LD3MwMleQi6ubbk0RzrcQV48n9G",
   "parent_node_token": "Qx3KwLdH6i9yOwk0PJgcNMCxnng",
   "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
   "space_id": "7613776537935514838",
-  "type": "docx"
+  "type": "docx",
+  "sync_format_version": 4
 }

@@ -212,11 +212,112 @@
       font-size: 13px;
     }
 
-    .article .doc-content {
-      white-space: pre-wrap;
+    .doc-body {
       line-height: 1.8;
       font-size: 15px;
       color: #3a2f22;
+      word-break: break-word;
+    }
+
+    .doc-body h2,
+    .doc-body h3,
+    .doc-body h4,
+    .doc-body h5 {
+      margin: 28px 0 10px;
+      line-height: 1.35;
+    }
+
+    .doc-body p,
+    .doc-body blockquote,
+    .doc-body pre,
+    .doc-body ul,
+    .doc-body ol,
+    .doc-body .doc-table-wrap,
+    .doc-body .doc-grid,
+    .doc-body .attachment,
+    .doc-body .doc-image {
+      margin: 14px 0;
+    }
+
+    .doc-body ul,
+    .doc-body ol {
+      padding-left: 22px;
+    }
+
+    .doc-body blockquote {
+      padding: 12px 16px;
+      border-left: 4px solid rgba(184, 92, 56, 0.35);
+      background: rgba(184, 92, 56, 0.08);
+      border-radius: 12px;
+      color: #523b23;
+    }
+
+    .doc-body pre {
+      overflow: auto;
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: #2e261d;
+      color: #f7f1e8;
+    }
+
+    .doc-body code {
+      font-family: "Cascadia Code", "Fira Code", Consolas, monospace;
+      font-size: 0.92em;
+    }
+
+    .doc-body p code,
+    .doc-body li code,
+    .doc-body blockquote code {
+      padding: 2px 6px;
+      border-radius: 8px;
+      background: rgba(87, 58, 20, 0.08);
+      color: #7c3319;
+    }
+
+    .doc-body .doc-image img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 14px;
+      border: 1px solid rgba(90, 64, 29, 0.12);
+      box-shadow: 0 16px 36px rgba(62, 44, 22, 0.12);
+      background: #fff;
+    }
+
+    .doc-body .attachment a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .doc-body .attachment a:hover {
+      text-decoration: underline;
+    }
+
+    .doc-grid {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .doc-grid-column {
+      min-width: 0;
+    }
+
+    .doc-table-wrap {
+      overflow: auto;
+    }
+
+    .doc-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    .doc-table td {
+      min-width: 96px;
+      padding: 10px 12px;
+      border: 1px solid rgba(120, 95, 60, 0.18);
+      vertical-align: top;
     }
 
     .empty,
@@ -260,11 +361,6 @@
         min-height: auto;
       }
 
-      .tree-panel,
-      .content-panel {
-        min-height: auto;
-      }
-
       .article {
         padding: 20px;
       }
@@ -276,7 +372,7 @@
     <header class="header">
       <div class="title-wrap">
         <h1>飞书知识库镜像</h1>
-        <p>按页面层级浏览文档，点击左侧目录即可查看内容。</p>
+        <p>按页面层级浏览文档，左侧目录与正文内容都来自静态同步结果。</p>
       </div>
       <div class="meta" id="sync-meta">准备加载知识库…</div>
     </header>
@@ -296,7 +392,7 @@
           <div class="breadcrumbs" id="breadcrumbs">请选择左侧文档</div>
         </div>
         <article id="article-root" class="empty">
-          知识库加载完成后，左侧会显示完整的页面树。
+          知识库加载完成后，这里会展示正文、图片、代码块和表格。
         </article>
       </section>
     </section>
@@ -316,6 +412,7 @@
 
     async function loadDocs() {
       setTreeStatus("正在加载目录…");
+
       try {
         const docs = await loadDocsFromManifest();
         initializeDocs(docs, "manifest");
@@ -324,7 +421,7 @@
           const docs = await loadDocsFromDirectoryListing();
           initializeDocs(docs, "directory");
         } catch (directoryError) {
-          setTreeStatus(`加载失败：${directoryError.message}`, true);
+          setTreeStatus(`加载失败: ${directoryError.message}`, true);
           document.getElementById("article-root").className = "status error";
           document.getElementById("article-root").textContent = "无法加载知识库内容，请检查同步产物是否已发布。";
           document.getElementById("sync-meta").textContent = "加载失败";
@@ -350,13 +447,12 @@
         throw new Error(`目录列表请求失败 (${response.status})`);
       }
 
-      const html = await response.text();
+      const htmlText = await response.text();
       const parser = new DOMParser();
-      const doc = parser.parseFromString(html, "text/html");
-      const links = doc.querySelectorAll("a");
+      const doc = parser.parseFromString(htmlText, "text/html");
       const files = [];
 
-      links.forEach((link) => {
+      doc.querySelectorAll("a").forEach((link) => {
         const href = link.getAttribute("href");
         if (href && href.endsWith(".json")) {
           files.push(DOCS_DIR_URL + href);
@@ -366,12 +462,7 @@
       const docs = await Promise.all(
         files.map(async (file, index) => {
           const item = await fetch(file, { cache: "no-store" }).then((res) => res.json());
-          return normalizeDocMeta({
-            ...item,
-            file,
-            order: index,
-            embedded: item,
-          });
+          return normalizeDocMeta({ ...item, file, order: index, embedded: item });
         })
       );
 
@@ -405,7 +496,7 @@
       document.getElementById("doc-count").textContent = `${docs.length} docs`;
       document.getElementById("sync-meta").textContent =
         source === "manifest"
-          ? "已从同步清单加载目录"
+          ? "已从同步清单加载目录和正文"
           : "未找到同步清单，已回退到目录扫描模式";
 
       if (docs.length === 0) {
@@ -495,7 +586,7 @@
         renderDoc(doc);
       } catch (error) {
         article.className = "status error";
-        article.textContent = `文档加载失败：${error.message}`;
+        article.textContent = `文档加载失败: ${error.message}`;
       }
     }
 
@@ -528,10 +619,15 @@
     function renderDoc(doc) {
       const article = document.getElementById("article-root");
       article.className = "article";
+
+      const bodyHtml = doc.render_html
+        ? `<div class="doc-body">${doc.render_html}</div>`
+        : `<div class="doc-body"><p>${escapeHtml(doc.raw_content || "（无内容）").replaceAll("\\n", "<br>")}</p></div>`;
+
       article.innerHTML = `
         <h3>${escapeHtml(doc.title || "Untitled")}</h3>
         <div class="updated-at">最近更新：${formatUpdatedAt(doc.updated_at)}</div>
-        <div class="doc-content">${escapeHtml(doc.raw_content || "（无内容）")}</div>
+        ${bodyHtml}
       `;
 
       document.getElementById("breadcrumbs").textContent = buildBreadcrumbs(doc).join(" / ");
@@ -545,11 +641,9 @@
       while (current && current.node_token && !visited.has(current.node_token)) {
         visited.add(current.node_token);
         names.unshift(current.title || "Untitled");
-
         if (!current.parent_node_token) {
           break;
         }
-
         current = state.docsByNodeToken.get(current.parent_node_token);
       }
 

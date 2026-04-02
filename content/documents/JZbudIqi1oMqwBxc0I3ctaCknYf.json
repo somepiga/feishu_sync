@@ -3,10 +3,13 @@
   "title": "故障批量查询",
   "updated_at": "2026-03-05T14:22:20+00:00",
   "raw_content": "故障批量查询\n见文档 4.故障批量查询\n\n光模块功率\n参考\n数据错误信息\n光模块功率\nTX Power：光模块发送光功率，单位为dBm。正常工作状态下非常稳定，出现如下情况，基本可以确认模块硬件故障：\n温度稳定状态下发生偏差±3dB以上的变化。\n无发光时TX Bias电流正常。\nRX Power：光模块接收光功率，单位为dBm。在模块正常接收功率范围内准确性较好，偏差小于±3dB。当RX Power过高或者过低、RX LOS在告警状态下，使用 display transceiver diagnosis 命令读取的的功率数据可能不准确。\n接收光功率过低通常可以排查如下问题：\n对端光模块发送问题，如光模块存在故障，光口有异物等。\n中间光链路问题，如光纤传输距离过长，光纤质量差。\n本端光模块接收问题，如光模块存在故障，光口有异物等。\n接收光功率过高常见于传输距离在10km以上的光模块。通常可以传输链路中增加光衰来解决。如增加足够光衰或拔掉光纤依然有告警，则模块可能已损坏。\n参考\nH3C光模块和光链路运维指导书-6W100\n什么是光模块以及光模块的常见问题\n光功率dBm为何是负数\n数据错误信息\n\n\n命令\n\n统计层次\n\nethtool -S\n\n硬件/驱动层\n\nip -s link\n\n内核网络栈层\n\ncat /proc/net/dev\n\n内核网络栈层\n\ntcpdump\n\n协议层\n\n",
+  "render_html": "<blockquote>见文档 4.故障批量查询</blockquote><ul><li></li><li>光模块功率<ul><li>参考</li></ul></li><li>数据错误信息</li></ul><h2>光模块功率</h2><p>TX Power：光模块发送光功率，单位为dBm。正常工作状态下非常稳定，出现如下情况，基本可以确认模块硬件故障：</p><ul><li><strong>温度稳定状态下发生偏差±3dB以上的变化。</strong></li><li>无发光时TX Bias电流正常。</li></ul><p>RX Power：光模块接收光功率，单位为dBm。在模块正常接收功率范围内准确性较好，偏差小于±3dB。当RX Power过高或者过低、RX LOS在告警状态下，使用 <strong>display transceiver diagnosis </strong>命令读取的的功率数据可能不准确。</p><p>接收光功率过低通常可以排查如下问题：</p><ul><li>对端光模块发送问题，如光模块存在故障，光口有异物等。</li><li>中间光链路问题，如光纤传输距离过长，光纤质量差。</li><li>本端光模块接收问题，如光模块存在故障，光口有异物等。</li></ul><p>接收光功率过高常见于传输距离在10km以上的光模块。通常可以传输链路中增加光衰来解决。如增加足够光衰或拔掉光纤依然有告警，则模块可能已损坏。</p><h3>参考</h3><p>H3C光模块和光链路运维指导书-6W100</p><p>什么是光模块以及光模块的常见问题</p><p>光功率dBm为何是负数</p><h2>数据错误信息</h2><div class=\"doc-table-wrap\"><table class=\"doc-table\"><tr><td><p>命令</p></td><td><p>统计层次</p></td></tr><tr><td><p>ethtool -S</p></td><td><p>硬件/驱动层</p></td></tr><tr><td><p>ip -s link</p></td><td><p>内核网络栈层</p></td></tr><tr><td><p>cat /proc/net/dev</p></td><td><p>内核网络栈层</p></td></tr><tr><td><p>tcpdump</p></td><td><p>协议层</p></td></tr></table></div><p>&nbsp;</p>",
+  "assets": [],
   "blocks": [],
   "node_token": "FiG5w1jYCiDrLYkdls3c0YIPn3g",
   "parent_node_token": "MMEywuoqGiRd95kkPzOcHrxBn5d",
   "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
   "space_id": "7613776537935514838",
-  "type": "docx"
+  "type": "docx",
+  "sync_format_version": 4
 }

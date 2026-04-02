@@ -3,10 +3,28 @@
   "title": "TP PP overlap的问题",
   "updated_at": "2026-03-05T14:22:13+00:00",
   "raw_content": "TP PP overlap的问题\nTP+PP 的通信特征\nTP 是单节点内多卡间的高频通信，PP 是跨节点的卡间通信\n而 BR166 的通信依赖 SubNoc（片内子网络）+ CPDMA（通信 DMA 控制器）完成数据转发，port1/port2 是核心的通信端口，TP/PP 的所有请求都会通过这两个端口的 CPDMA 进入 SubNoc。这成为冲突的前提。\nSubNoc 的 ID Remap 无 唯一性保证\n所有进入 SubNoc 的请求（不管是 TP 的、PP 的，还是 H2D 的），都会被分配一个  内部标识 ID （这个过程就是 ID Remap）\n关键问题：BR10X 系列芯片的 SubNoc，可能会让 来自不同 master（TP 、PP 、H2D）的请求，被 Remap 相同的 ID。\nslave 端的强排序规则\nSubNoc 的请求最终会发往 slave 端，而 slave 端有一个硬性的请求排序规则：\n若发往同一个 slave 端的多个请求，出现 相同的内部 ID ，slave 端会立即 阻塞该端口后续所有的读 / 写请求 ，直到这个冲突 ID 的请求完全执行完成，才会处理后续请求。\n这个规则的本质是保证请求的执行顺序，但副作用是 单个 ID 冲突会引发连锁阻塞\n实验结果\nTP、PP、H2D，三个操作最多会产生两个冲突点\n如果使用场景下，存在一个冲突点，p2p 单向带宽会小概率下降，有观察到 27.5 --> 23 GB/s（一般 25 GB 左右）;\n如果使用场景下，存在两个冲突点，p2p 单向带宽会极大概率下降 50% 以上，27.5 -->12.7 GB/s；\n应对方案\n目前 port1、port2 所在的 subnoc 上两个 cpdma 同时使用时会有一个冲突点，加上 h2d 会形成两个冲突点，带宽下降 14.8 GB/s（50% 以上）。\n若可以将当前的两个冲突点 减少到一个冲突点 ，有希望将 link 带宽损失控制在 2.5 - 4.5 GB/s （9%~16%）。\n从 4 ring 下降到 3 ring 是否可以减少 port 1-2 上的 cpdma 使用，如果可以则减少到一个冲突点，带宽下降控制在 9%~16%\n在上面基础上，需要评估最终实现是否有其它问题，造成带宽进一步降低，最终算法带宽的预期有多少？\n3 ring 切分是否有长尾，长尾对性能的影响？\n216675289.png\n\n216675292.png\n\n",
+  "render_html": "<h2>TP+PP 的通信特征</h2><p>TP 是单节点内多卡间的高频通信，PP 是跨节点的卡间通信</p><p>而 BR166 的通信依赖 SubNoc（片内子网络）+ CPDMA（通信 DMA 控制器）完成数据转发，port1/port2 是核心的通信端口，TP/PP 的所有请求都会通过这两个端口的 CPDMA 进入 SubNoc。这成为冲突的前提。</p><h2>SubNoc 的 ID Remap 无 唯一性保证</h2><p>所有进入 SubNoc 的请求（不管是 TP 的、PP 的，还是 H2D 的），都会被分配一个  内部标识 ID （这个过程就是 ID Remap）</p><p>关键问题：BR10X 系列芯片的 SubNoc，可能会让 来自不同 master（TP 、PP 、H2D）的请求，被 Remap 相同的 ID。</p><h2>slave 端的强排序规则</h2><p>SubNoc 的请求最终会发往 slave 端，而 slave 端有一个硬性的请求排序规则：</p><p>若发往同一个 slave 端的多个请求，出现 <strong>相同的内部 ID </strong>，slave 端会立即 <strong>阻塞该端口后续所有的读 / 写请求 </strong>，直到这个冲突 ID 的请求完全执行完成，才会处理后续请求。</p><p>这个规则的本质是保证请求的执行顺序，但副作用是 单个 ID 冲突会引发连锁阻塞</p><h2>实验结果</h2><p>TP、PP、H2D，三个操作最多会产生两个冲突点</p><ul><li>如果使用场景下，存在一个冲突点，p2p 单向带宽会小概率下降，有观察到 27.5 --&gt; 23 GB/s（一般 25 GB 左右）;</li><li>如果使用场景下，存在两个冲突点，p2p 单向带宽会极大概率下降 50% 以上，27.5 --&gt;12.7 GB/s；</li></ul><h2>应对方案</h2><p>目前 port1、port2 所在的 subnoc 上两个 cpdma 同时使用时会有一个冲突点，加上 h2d 会形成两个冲突点，带宽下降 14.8 GB/s（50% 以上）。</p><p>若可以将当前的两个冲突点 <strong>减少到一个冲突点 </strong>，有希望将 link 带宽损失控制在 2.5 - 4.5 GB/s （9%~16%）。</p><ol><li>从 4 ring 下降到 3 ring 是否可以减少 port 1-2 上的 cpdma 使用，如果可以则减少到一个冲突点，带宽下降控制在 9%~16%</li><li>在上面基础上，需要评估最终实现是否有其它问题，造成带宽进一步降低，最终算法带宽的预期有多少？<ol><li>3 ring 切分是否有长尾，长尾对性能的影响？</li></ol></li></ol><figure class=\"doc-image\"><img src=\"content/media/DvpFbfZZMo9CCIxiKbpcP30Cnug.png\" alt=\"image\" loading=\"lazy\" width=\"1962\" height=\"1123\"></figure><figure class=\"doc-image\"><img src=\"content/media/UVVWbrN1uoj8SwxqOkSc51C5ngP.png\" alt=\"image\" loading=\"lazy\" width=\"1982\" height=\"1095\"></figure>",
+  "assets": [
+    {
+      "token": "DvpFbfZZMo9CCIxiKbpcP30Cnug",
+      "name": "216675289.png",
+      "path": "content/media/DvpFbfZZMo9CCIxiKbpcP30Cnug.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "UVVWbrN1uoj8SwxqOkSc51C5ngP",
+      "name": "216675292.png",
+      "path": "content/media/UVVWbrN1uoj8SwxqOkSc51C5ngP.png",
+      "content_type": "image/png",
+      "type": "image"
+    }
+  ],
   "blocks": [],
   "node_token": "Idd0wXhCziqsDBknQakcqlwgnIb",
   "parent_node_token": "KxQiwiEKgii0UhkxloMc1msDnch",
   "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
   "space_id": "7613776537935514838",
-  "type": "docx"
+  "type": "docx",
+  "sync_format_version": 4
 }

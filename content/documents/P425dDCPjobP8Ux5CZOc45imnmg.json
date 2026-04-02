@@ -3,10 +3,13 @@
   "title": "通算并行",
   "updated_at": "2026-03-05T14:22:22+00:00",
   "raw_content": "通算并行\n小红书策略移植\n参考： https://developer.nvidia.cn/blog/1f1b-moe-a2a-computing-overlap\n实现： https://github.com/lhb8125/Megatron-LM/pull/6/changes\n\n",
+  "render_html": "<blockquote>小红书策略移植</blockquote><blockquote>参考： https://developer.nvidia.cn/blog/1f1b-moe-a2a-computing-overlap</blockquote><blockquote>实现： https://github.com/lhb8125/Megatron-LM/pull/6/changes</blockquote><p>&nbsp;</p>",
+  "assets": [],
   "blocks": [],
   "node_token": "MM2Swr5FqiCNMvknNS9cWGZRncc",
   "parent_node_token": "Qx3KwLdH6i9yOwk0PJgcNMCxnng",
   "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
   "space_id": "7613776537935514838",
-  "type": "docx"
+  "type": "docx",
+  "sync_format_version": 4
 }

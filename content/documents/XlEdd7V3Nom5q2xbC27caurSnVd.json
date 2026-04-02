@@ -3,10 +3,49 @@
   "title": "[GQA] mcast 测试",
   "updated_at": "2026-03-05T14:22:27+00:00",
   "raw_content": "[GQA] mcast 测试\n\n1.模型配置\nllama2 70B 4卡16spc：        单卡q_head= 16， kv_head= 2\ncodellama 33B 2卡12spc：  单卡q_head= 32， kv_head= 4\n当前可以总结出， Q 8个head 对应 KV 1个head\n\n2.mcast 配置\nSUPA中可用的mcast配置\n/// \\brief Load merge scope mode\nenum LOAD_MERGE_SCOPE_MODE {\n    LOAD_MERGE_SCOPE_OFF,\n    LOAD_MERGE_SCOPE_VTG,\n    LOAD_MERGE_SCOPE_DTG,\n    LOAD_MERGE_SCOPE_PEER,\n}\n\nimage2024-1-5_17-16-3.png \n\nimage2024-1-5_17-16-18.png \n\nimage2024-1-5_17-16-36.png\n\n\nKMD mcast参数 biren_mcast_vf_num 的配置\nKMD 加载方法及参数解析 - SoftwareSpace - Confluence (birentech.com)\n\n3. 测试结果\n测试case:\nMHA_test<BF16>(8, 1, 32, 32, 639, 1);  //  BF16，MHA， 每个spc 处理 16个 head, seq=640\nMHA_test<FP32>(8, 1, 32, 32, 639, 1);  //  FP32，MHA， 每个spc 处理 16个 head, seq=640\nMHA_test<BF16>(8, 1, 32, 4, 639, 1);    //  BF16，GQA， 每个spc 处理 16个 head, seq=640\nMHA_test<FP32>(8, 1, 32, 4, 639, 1);    //  FP32，GQA， 每个spc 处理 16个 head, seq=640\na.  精度\n将GQA ldm kv cache 的Load merge scope分别配置为 DTG/VTG/PEER， 结果全部mismatch， 需要和硬件check\nb. 性能\n忽略结果的正确性，并将reorder部分代码注释，分析attention部分性能\n*NUMA/UMA 指S*V的输出是NUMA/UMA\n\n\n\n\nUMA\n\nNUMA\n\nBF16，MHA\n\n175669\n\n176130\n\nFP32，MHA\n\n303091\n\n304830\n\n\n\nNUMA\n\nOFF\n\nDTG\n\nVTG\n\nPEER\n\nBF16，GQA\n\n245582\n\n123232\n\n123003\n\n164730\n\nFP32，GQA\n\n445940\n\n1839456\n\n216148\n\n295746\n\n\nUMA\n\nOFF\n\nDTG\n\nVTG\n\nPEER\n\nBF16，GQA\n\n246277\n\n123505\n\n125972\n\n164121\n\nFP32，GQA\n\n447017\n\n183940\n\n216919\n\n302294\n\n4. biren_mcast_vf_num=2测试\nimage2024-1-8_19-47-5.png\n\nimage2024-1-8_19-47-38.png\n\n测试结果： 需要将kv cache设置为UMA8\n\n\nKV UMA8\n\nOFF\n\nDTG\n\nVTG\n\nPEER\n\nBF16，GQA\n\n152425\n\n128628\n\n125934\n\n137038\n\nFP32，GQA\n\n262820\n\n168123\n\n196883\n\n236328\n5设置命令\n查寻：  cat /sys/module/biren/parameters/biren_mcast_vf_num\n设置：\nrmmod biren\nmodprobe biren biren_mcast_vf_num=2\n",
+  "render_html": "<p>&nbsp;</p><p>1.模型配置</p><p>llama2 70B 4卡16spc：        单卡q_head= 16， kv_head= 2</p><p>codellama 33B 2卡12spc：  单卡q_head= 32， kv_head= 4</p><p>当前可以总结出， Q 8个head 对应 KV 1个head</p><p>&nbsp;</p><p>2.mcast 配置</p><p>SUPA中可用的mcast配置</p><pre><code>/// \\brief Load merge scope mode\nenum LOAD_MERGE_SCOPE_MODE {\n    LOAD_MERGE_SCOPE_OFF,\n    LOAD_MERGE_SCOPE_VTG,\n    LOAD_MERGE_SCOPE_DTG,\n    LOAD_MERGE_SCOPE_PEER,\n}</code></pre><p>&nbsp;</p><figure class=\"doc-image\"><img src=\"content/media/JtrgbUR6Vola0GxePSJc9qY3nKb.png\" alt=\"image\" loading=\"lazy\" width=\"907\" height=\"358\"></figure><figure class=\"doc-image\"><img src=\"content/media/TVs7bXWU4oPTAMx6bywcoGeXnPh.png\" alt=\"image\" loading=\"lazy\" width=\"907\" height=\"358\"></figure><figure class=\"doc-image\"><img src=\"content/media/H13pbLZhzoqGPVxiBEVcdYeNnTe.png\" alt=\"image\" loading=\"lazy\" width=\"905\" height=\"503\"></figure><p>&nbsp;</p><p>KMD mcast参数 <strong>biren_mcast_vf_num </strong>的配置</p><p>KMD 加载方法及参数解析 - SoftwareSpace - Confluence (birentech.com)</p><p>&nbsp;</p><p>3. 测试结果</p><p>测试case:</p><p>MHA_test&lt;BF16&gt;(8, 1, 32, 32, 639, 1);  //  BF16，MHA， 每个spc 处理 16个 head, seq=640<br>MHA_test&lt;FP32&gt;(8, 1, 32, 32, 639, 1);  //  FP32，MHA， 每个spc 处理 16个 head, seq=640<br>MHA_test&lt;BF16&gt;(8, 1, 32, 4, 639, 1);    //  BF16，GQA， 每个spc 处理 16个 head, seq=640<br>MHA_test&lt;FP32&gt;(8, 1, 32, 4, 639, 1);    //  FP32，GQA， 每个spc 处理 16个 head, seq=640</p><p>a.  精度</p><p>将GQA ldm kv cache 的Load merge scope分别配置为 DTG/VTG/PEER， 结果全部mismatch， 需要和硬件check</p><p>b. 性能</p><p>忽略结果的正确性，并将reorder部分代码注释，分析attention部分性能</p><p>*NUMA/UMA 指S*V的输出是NUMA/UMA</p><div class=\"doc-table-wrap\"><table class=\"doc-table\"><tr><td><p>&nbsp;</p></td><td><p>UMA</p></td><td><p>NUMA</p></td></tr><tr><td><p>BF16，MHA</p></td><td><p>175669</p></td><td><p>176130</p></td></tr><tr><td><p>FP32，MHA</p></td><td><p>303091</p></td><td><p>304830</p></td></tr></table></div><p>&nbsp;</p><div class=\"doc-table-wrap\"><table class=\"doc-table\"><tr><td><p>NUMA</p></td><td><p>OFF</p></td><td><p>DTG</p></td><td><p>VTG</p></td><td><p>PEER</p></td></tr><tr><td><p>BF16，GQA</p></td><td><p>245582</p></td><td><p>123232</p></td><td><p>123003</p></td><td><p>164730</p></td></tr><tr><td><p>FP32，GQA</p></td><td><p>445940</p></td><td><p>1839456</p></td><td><p>216148</p></td><td><p>295746</p></td></tr></table></div><div class=\"doc-table-wrap\"><table class=\"doc-table\"><tr><td><p>UMA</p></td><td><p>OFF</p></td><td><p>DTG</p></td><td><p>VTG</p></td><td><p>PEER</p></td></tr><tr><td><p>BF16，GQA</p></td><td><p>246277</p></td><td><p>123505</p></td><td><p>125972</p></td><td><p>164121</p></td></tr><tr><td><p>FP32，GQA</p></td><td><p>447017</p></td><td><p>183940</p></td><td><p>216919</p></td><td><p>302294</p></td></tr></table></div><p>&nbsp;</p><p>4. <strong>biren_mcast_vf_num=2测试</strong></p><figure class=\"doc-image\"><img src=\"content/media/OxNpbEu1foJIEmxXE0cc9Asynjf.png\" alt=\"image\" loading=\"lazy\" width=\"1092\" height=\"289\"></figure><figure class=\"doc-image\"><img src=\"content/media/FEKwbmyico3iz9xZU7jc25olnzG.png\" alt=\"image\" loading=\"lazy\" width=\"548\" height=\"274\"></figure><p>测试结果： 需要将kv cache设置为UMA8</p><div class=\"doc-table-wrap\"><table class=\"doc-table\"><tr><td><p>KV UMA8</p></td><td><p>OFF</p></td><td><p>DTG</p></td><td><p>VTG</p></td><td><p>PEER</p></td></tr><tr><td><p>BF16，GQA</p></td><td><p>152425</p></td><td><p>128628</p></td><td><p>125934</p></td><td><p>137038</p></td></tr><tr><td><p>FP32，GQA</p></td><td><p>262820</p></td><td><p>168123</p></td><td><p>196883</p></td><td><p>236328</p></td></tr></table></div><p>5设置命令</p><p>查寻：  cat /sys/module/biren/parameters/biren_mcast_vf_num</p><p>设置：</p><p>rmmod biren</p><p>modprobe biren biren_mcast_vf_num=2</p>",
+  "assets": [
+    {
+      "token": "JtrgbUR6Vola0GxePSJc9qY3nKb",
+      "name": "image2024-1-5_17-16-3.png",
+      "path": "content/media/JtrgbUR6Vola0GxePSJc9qY3nKb.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "TVs7bXWU4oPTAMx6bywcoGeXnPh",
+      "name": "image2024-1-5_17-16-18.png",
+      "path": "content/media/TVs7bXWU4oPTAMx6bywcoGeXnPh.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "H13pbLZhzoqGPVxiBEVcdYeNnTe",
+      "name": "image2024-1-5_17-16-36.png",
+      "path": "content/media/H13pbLZhzoqGPVxiBEVcdYeNnTe.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "OxNpbEu1foJIEmxXE0cc9Asynjf",
+      "name": "image2024-1-8_19-47-5.png",
+      "path": "content/media/OxNpbEu1foJIEmxXE0cc9Asynjf.png",
+      "content_type": "image/png",
+      "type": "image"
+    },
+    {
+      "token": "FEKwbmyico3iz9xZU7jc25olnzG",
+      "name": "image2024-1-8_19-47-38.png",
+      "path": "content/media/FEKwbmyico3iz9xZU7jc25olnzG.png",
+      "content_type": "image/png",
+      "type": "image"
+    }
+  ],
   "blocks": [],
   "node_token": "TB63wD1Ywiws8kkSChWcRFgAngd",
   "parent_node_token": "JFOJwBTm1iCveTk4g1jccKLLnFb",
   "wiki_token": "Wh1CwndtIiDWMzk8YutcIlZtn4d",
   "space_id": "7613776537935514838",
-  "type": "docx"
+  "type": "docx",
+  "sync_format_version": 4
 }
