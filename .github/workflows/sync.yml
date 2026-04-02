@@ -1,15 +1,14 @@
-name: Sync Feishu Docs
+name: Sync Feishu Docs (Paused)
 
 on:
-  schedule:
-    - cron: '0 2 * * *'  # 每天凌晨2点执行
-  workflow_dispatch:      # 支持手动触发
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
   sync:
+    if: ${{ false }}  # Publishing is intentionally paused while the public site is hidden.
     runs-on: ubuntu-latest
     environment: github-pages
     steps:
@@ -20,7 +19,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Install dependencies
         run: pip install -r scripts/requirements.txt
