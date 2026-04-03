@@ -24,7 +24,7 @@
       --shadow: 0 20px 60px rgba(17, 24, 39, 0.06);
       --reader-width: 860px;
       --sidebar-width: 312px;
-      --sidebar-collapsed-width: 92px;
+      --sidebar-collapsed-width: 82px;
       --transition: 180ms ease;
     }
 
@@ -320,16 +320,11 @@
     }
 
     .nav-item {
-      display: block;
       width: 100%;
       padding: 12px 12px 12px calc(12px + (min(var(--depth, 0), 4) * 14px));
       border-radius: 16px;
       text-align: left;
       transition: background var(--transition), transform var(--transition), color var(--transition);
-    }
-
-    .nav-item-short {
-      display: none;
     }
 
     .nav-item:hover {
@@ -439,6 +434,47 @@
       color: var(--muted);
     }
 
+    .sidebar-compact-actions {
+      display: none;
+      justify-items: center;
+      gap: 12px;
+      width: 100%;
+      padding-top: 4px;
+    }
+
+    .compact-action {
+      width: 48px;
+      height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--text);
+      box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06);
+      transition: transform var(--transition), box-shadow var(--transition), background var(--transition), color var(--transition);
+    }
+
+    .compact-action svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+    }
+
+    .compact-action:hover:not(:disabled),
+    .compact-action:focus-visible {
+      background: #fff;
+      transform: translateY(-1px);
+      box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.09), 0 12px 24px rgba(15, 23, 42, 0.08);
+    }
+
+    .compact-action:disabled {
+      opacity: 0.45;
+      cursor: default;
+      transform: none;
+      box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06);
+    }
+
     .workspace {
       display: flex;
       flex: 1;
@@ -510,28 +546,166 @@
       padding: 18px 0 64px;
     }
 
-    .reading-rail {
+    .toc-shell {
       position: fixed;
       top: 132px;
       left: calc(var(--sidebar-width) + 18px);
-      z-index: 1;
-      display: grid;
-      gap: 10px;
+      z-index: 2;
       transition: left var(--transition), opacity var(--transition);
+    }
+
+    .toc-shell.is-hidden {
+      opacity: 0;
       pointer-events: none;
     }
 
-    .reading-rail span {
-      display: block;
-      width: 34px;
-      height: 4px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.09);
+    .toc-rail {
+      display: grid;
+      gap: 8px;
+      padding: 14px 10px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.76);
+      border: 1px solid rgba(15, 23, 42, 0.05);
+      box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+      backdrop-filter: blur(16px);
     }
 
-    .reading-rail span:first-child {
-      height: 5px;
-      background: rgba(15, 23, 42, 0.92);
+    .toc-rail-button {
+      width: 38px;
+      min-height: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 4px 0;
+      border-radius: 999px;
+      transition: transform var(--transition), background var(--transition);
+    }
+
+    .toc-rail-button span {
+      display: block;
+      width: var(--toc-line-width, 24px);
+      height: 4px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.12);
+      transition: background var(--transition), width var(--transition), transform var(--transition);
+    }
+
+    .toc-rail-button[data-level="0"] {
+      --toc-line-width: 34px;
+    }
+
+    .toc-rail-button[data-level="1"] {
+      --toc-line-width: 26px;
+    }
+
+    .toc-rail-button[data-level="2"] {
+      --toc-line-width: 18px;
+    }
+
+    .toc-rail-button:hover span,
+    .toc-rail-button:focus-visible span,
+    .toc-rail-button.active span {
+      background: rgba(15, 23, 42, 0.9);
+      transform: translateX(2px);
+    }
+
+    .toc-panel {
+      position: absolute;
+      left: 58px;
+      top: -10px;
+      width: clamp(250px, 24vw, 340px);
+      max-height: min(72vh, 680px);
+      padding: 18px 14px 14px;
+      border-radius: 28px;
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid rgba(15, 23, 42, 0.06);
+      box-shadow: 0 32px 60px rgba(15, 23, 42, 0.12);
+      backdrop-filter: blur(18px);
+      opacity: 0;
+      transform: translateX(-12px) scale(0.985);
+      pointer-events: none;
+      transition: opacity var(--transition), transform var(--transition);
+    }
+
+    .toc-shell.is-open .toc-panel {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+      pointer-events: auto;
+    }
+
+    .toc-panel-label {
+      padding: 2px 10px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted-soft);
+    }
+
+    .toc-list {
+      max-height: calc(min(72vh, 680px) - 52px);
+      overflow: auto;
+      display: grid;
+      gap: 4px;
+      padding-right: 4px;
+    }
+
+    .toc-list::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    .toc-list::-webkit-scrollbar-thumb {
+      border: 3px solid transparent;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.16);
+      background-clip: padding-box;
+    }
+
+    .toc-item {
+      width: 100%;
+      display: block;
+      padding: 10px 12px;
+      border-radius: 18px;
+      text-align: left;
+      color: var(--muted);
+      transition: background var(--transition), color var(--transition), transform var(--transition);
+    }
+
+    .toc-item:hover,
+    .toc-item:focus-visible {
+      background: rgba(15, 23, 42, 0.045);
+      color: var(--text);
+      transform: translateX(2px);
+    }
+
+    .toc-item[data-level="0"] {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .toc-item[data-level="1"] {
+      padding-left: 16px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .toc-item[data-level="2"] {
+      padding-left: 34px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .toc-item.active {
+      background: rgba(15, 23, 42, 0.06);
+      color: var(--text);
+      box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.05);
+    }
+
+    .toc-item-label {
+      display: block;
+      word-break: break-word;
+      line-height: 1.45;
     }
 
     .reader-panel {
@@ -618,6 +792,7 @@
 
     .doc-hero {
       margin-bottom: 26px;
+      scroll-margin-top: 112px;
     }
 
     .doc-kicker {
@@ -686,6 +861,7 @@
       line-height: 1.2;
       letter-spacing: -0.02em;
       color: #111827;
+      scroll-margin-top: 112px;
     }
 
     .doc-body h1 {
@@ -825,68 +1001,40 @@
     }
 
     .app-shell.sidebar-collapsed .brand-copy,
-    .app-shell.sidebar-collapsed .sidebar-action-label,
+    .app-shell.sidebar-collapsed #jump-first-btn,
     .app-shell.sidebar-collapsed .search-wrap,
     .app-shell.sidebar-collapsed .sidebar-meta,
-    .app-shell.sidebar-collapsed .nav-group-label,
-    .app-shell.sidebar-collapsed .nav-item-meta,
-    .app-shell.sidebar-collapsed .profile-copy {
-      display: none;
-    }
-
-    .app-shell.sidebar-collapsed .sidebar-top,
+    .app-shell.sidebar-collapsed .sidebar-scroll,
     .app-shell.sidebar-collapsed .sidebar-footer {
-      padding-left: 2px;
-      padding-right: 2px;
-    }
-
-    .app-shell.sidebar-collapsed .sidebar-action,
-    .app-shell.sidebar-collapsed .profile-pill {
-      justify-content: center;
-      padding-left: 10px;
-      padding-right: 10px;
-    }
-
-    .app-shell.sidebar-collapsed .nav-item {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 62px;
-      padding: 8px;
-      border-radius: 20px;
-      transform: none;
-    }
-
-    .app-shell.sidebar-collapsed .nav-item-title {
       display: none;
     }
 
-    .app-shell.sidebar-collapsed .nav-item-short {
-      display: inline-flex;
+    .app-shell.sidebar-collapsed .sidebar {
+      padding: 14px 8px 12px;
+      align-items: stretch;
+    }
+
+    .app-shell.sidebar-collapsed .sidebar-top {
+      display: flex;
+      flex-direction: column;
       align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: 4px 0;
+    }
+
+    .app-shell.sidebar-collapsed .brand-row {
+      width: 100%;
+      flex-direction: column;
       justify-content: center;
-      min-width: 48px;
-      max-width: 100%;
-      min-height: 48px;
-      padding: 10px 8px;
-      border-radius: 18px;
-      background: rgba(255, 255, 255, 0.78);
-      box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06);
-      color: var(--text);
-      font-size: 14px;
-      line-height: 1.15;
-      font-weight: 700;
-      text-align: center;
-      word-break: keep-all;
-      overflow: hidden;
+      gap: 10px;
     }
 
-    .app-shell.sidebar-collapsed .nav-item.active .nav-item-short {
-      background: rgba(15, 23, 42, 0.1);
-      box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+    .app-shell.sidebar-collapsed .sidebar-compact-actions {
+      display: grid;
     }
 
-    .app-shell.sidebar-collapsed .reading-rail {
+    .app-shell.sidebar-collapsed .toc-shell {
       left: calc(var(--sidebar-collapsed-width) + 18px);
     }
 
@@ -913,7 +1061,7 @@
     }
 
     @media (max-width: 1100px) {
-      .reading-rail {
+      .toc-shell {
         display: none;
       }
 
@@ -1020,6 +1168,32 @@
           </svg>
           <input class="search-input" id="doc-search" type="search" placeholder="搜索文档标题或路径">
         </label>
+
+        <div class="sidebar-compact-actions" aria-label="折叠侧边栏快捷操作">
+          <button class="compact-action" id="compact-home-btn" type="button" aria-label="打开第一篇文档" title="打开第一篇文档">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8">
+              <path d="M7 4.75h7.5L18 8.25V19a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 19V6.25A1.5 1.5 0 0 1 7.5 4.75Z" stroke-linejoin="round"></path>
+              <path d="M14.5 4.75V8.5H18" stroke-linejoin="round"></path>
+              <path d="M8.75 12h6.5M8.75 15.5h4.5" stroke-linecap="round"></path>
+            </svg>
+          </button>
+
+          <button class="compact-action" id="compact-search-btn" type="button" aria-label="展开侧边栏并搜索文档" title="搜索文档">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8">
+              <circle cx="11" cy="11" r="6.5"></circle>
+              <path d="M16 16l4 4" stroke-linecap="round"></path>
+            </svg>
+          </button>
+
+          <button class="compact-action" id="compact-browse-btn" type="button" aria-label="展开侧边栏并定位当前文档" title="定位当前文档">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8">
+              <path d="M6 7.5h12M6 12h12M6 16.5h8" stroke-linecap="round"></path>
+              <circle cx="4.5" cy="7.5" r="1" fill="currentColor" stroke="none"></circle>
+              <circle cx="4.5" cy="12" r="1" fill="currentColor" stroke="none"></circle>
+              <circle cx="4.5" cy="16.5" r="1" fill="currentColor" stroke="none"></circle>
+            </svg>
+          </button>
+        </div>
       </div>
 
       <div class="sidebar-meta">
@@ -1076,14 +1250,12 @@
       </header>
 
       <section class="workspace-body" id="workspace-body">
-        <div class="reading-rail" aria-hidden="true">
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
+        <div class="toc-shell is-hidden" id="toc-shell">
+          <div class="toc-rail" id="toc-rail" aria-label="文章目录快捷跳转"></div>
+          <div class="toc-panel" id="toc-panel">
+            <div class="toc-panel-label">目录</div>
+            <div class="toc-list" id="toc-list" role="navigation" aria-label="文章目录"></div>
+          </div>
         </div>
 
         <div class="reader-panel">
@@ -1111,7 +1283,12 @@
       activeId: null,
       searchQuery: "",
       lastSource: "hidden",
+      tocItems: [],
+      activeHeadingId: null,
+      isTocOpen: false,
     };
+
+    let tocSyncFrame = null;
 
     const refs = {
       appShell: document.getElementById("app-shell"),
@@ -1122,12 +1299,19 @@
       syncPill: document.getElementById("sync-pill"),
       docSearch: document.getElementById("doc-search"),
       jumpFirstButton: document.getElementById("jump-first-btn"),
+      compactHomeButton: document.getElementById("compact-home-btn"),
+      compactSearchButton: document.getElementById("compact-search-btn"),
+      compactBrowseButton: document.getElementById("compact-browse-btn"),
       workspaceBody: document.getElementById("workspace-body"),
       copyLinkButton: document.getElementById("copy-link-btn"),
       scrollTopButton: document.getElementById("scroll-top-btn"),
       sidebarToggle: document.getElementById("sidebar-toggle"),
       mobileSidebarOpen: document.getElementById("mobile-sidebar-open"),
       sidebarBackdrop: document.getElementById("sidebar-backdrop"),
+      tocShell: document.getElementById("toc-shell"),
+      tocRail: document.getElementById("toc-rail"),
+      tocPanel: document.getElementById("toc-panel"),
+      tocList: document.getElementById("toc-list"),
     };
 
     async function loadDocs() {
@@ -1223,8 +1407,8 @@
         source === "manifest" ? "ready" : "warning"
       );
 
-      refs.jumpFirstButton.disabled = docs.length === 0;
-      refs.jumpFirstButton.style.opacity = docs.length === 0 ? "0.5" : "1";
+      syncSidebarActionState();
+      syncSidebarToggleState();
 
       renderTree();
 
@@ -1338,13 +1522,14 @@
       button.setAttribute("aria-label", doc.title || "Untitled");
       button.style.setProperty("--depth", Math.min(depth, 4));
       button.innerHTML = `
-        <span class="nav-item-short" aria-hidden="true">${escapeHtml(makeCollapsedLabel(doc.title))}</span>
         <span class="nav-item-title">${escapeHtml(doc.title)}</span>
         <span class="nav-item-meta">${escapeHtml(metaText || "")}</span>
       `;
       button.addEventListener("click", () => {
         selectDoc(doc.id);
-        setSidebarOpen(false);
+        if (window.innerWidth <= 900) {
+          setSidebarOpen(false);
+        }
       });
       return button;
     }
@@ -1366,10 +1551,10 @@
       state.docs = [];
       state.tree = [];
       state.activeId = null;
+      resetToc();
       refs.docCount.textContent = "未公开";
       refs.breadcrumbs.textContent = "当前站点处于隐藏状态";
-      refs.jumpFirstButton.disabled = true;
-      refs.jumpFirstButton.style.opacity = "0.5";
+      syncSidebarActionState();
       setSyncState("内容未公开", "hidden");
       renderSidebarPlaceholder("目录和正文尚未重新发布。当前只保留界面壳子，知识库内容仍处于隐藏状态。");
 
@@ -1409,6 +1594,7 @@
     async function selectDoc(docId, options = {}) {
       const { updateHash = true } = options;
       state.activeId = docId;
+      resetToc();
       highlightActiveNode();
       refs.articleRoot.className = "reader-empty";
       refs.articleRoot.innerHTML = `
@@ -1467,7 +1653,7 @@
 
       refs.articleRoot.className = "article";
       refs.articleRoot.innerHTML = `
-        <div class="doc-hero">
+        <div class="doc-hero" id="doc-top-anchor">
           <div class="doc-kicker">Document Reader</div>
           <h1 class="doc-title">${escapeHtml(doc.title || "Untitled")}</h1>
           <div class="doc-summary">
@@ -1480,6 +1666,7 @@
       `;
 
       refs.breadcrumbs.textContent = buildBreadcrumbs(doc).join(" / ");
+      buildToc(doc);
     }
 
     function buildBreadcrumbs(doc) {
@@ -1522,6 +1709,7 @@
       } else {
         refs.appShell.classList.toggle("sidebar-collapsed", !open);
       }
+      syncSidebarToggleState();
     }
 
     function formatUpdatedAt(value) {
@@ -1552,34 +1740,232 @@
         .replaceAll("'", "&#39;");
     }
 
-    function makeCollapsedLabel(title) {
-      const value = String(title || "").trim();
-      if (!value) {
-        return "DOC";
+    function syncSidebarActionState() {
+      const hasDocs = state.docs.length > 0;
+      refs.jumpFirstButton.disabled = !hasDocs;
+      refs.jumpFirstButton.style.opacity = hasDocs ? "1" : "0.5";
+      refs.compactHomeButton.disabled = !hasDocs;
+      refs.compactBrowseButton.disabled = !hasDocs;
+    }
+
+    function syncSidebarToggleState() {
+      const isCollapsed = window.innerWidth > 900 && refs.appShell.classList.contains("sidebar-collapsed");
+      const label = isCollapsed ? "展开侧边栏" : "折叠侧边栏";
+      refs.sidebarToggle.setAttribute("aria-label", label);
+      refs.sidebarToggle.title = label;
+    }
+
+    function openDesktopSidebar() {
+      if (window.innerWidth > 900) {
+        refs.appShell.classList.remove("sidebar-collapsed");
+        syncSidebarToggleState();
+      }
+    }
+
+    function focusSidebarSearch() {
+      openDesktopSidebar();
+      window.requestAnimationFrame(() => {
+        refs.docSearch.focus();
+        refs.docSearch.select();
+      });
+    }
+
+    function revealActiveDocInSidebar() {
+      openDesktopSidebar();
+      window.requestAnimationFrame(() => {
+        const activeButton = refs.treeRoot.querySelector(".nav-item.active") || refs.treeRoot.querySelector(".nav-item");
+        if (!activeButton) {
+          return;
+        }
+        activeButton.scrollIntoView({ block: "center", behavior: "smooth" });
+        activeButton.focus({ preventScroll: true });
+      });
+    }
+
+    function getHeadingText(element) {
+      return (element.textContent || "").replace(/\s+/g, " ").trim();
+    }
+
+    function slugifyHeading(text) {
+      return String(text || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[^\p{Letter}\p{Number}\p{Script=Han}]+/gu, "-")
+        .replace(/^-+|-+$/g, "") || "section";
+    }
+
+    function resetToc() {
+      state.tocItems = [];
+      state.activeHeadingId = null;
+      state.isTocOpen = false;
+      renderToc();
+    }
+
+    function buildToc(doc) {
+      const hero = refs.articleRoot.querySelector("#doc-top-anchor");
+      const body = refs.articleRoot.querySelector(".doc-body");
+      if (!hero || !body) {
+        resetToc();
+        return;
       }
 
-      const chineseChars = Array.from(value.matchAll(/[\p{Script=Han}]/gu), (item) => item[0]);
-      if (chineseChars.length >= 2) {
-        return chineseChars.slice(0, 2).join("");
-      }
-      if (chineseChars.length === 1) {
-        return chineseChars[0];
-      }
+      const headingEntries = Array.from(body.querySelectorAll("h1, h2, h3, h4, h5, h6"))
+        .map((heading, index) => ({
+          element: heading,
+          rawLevel: Number(heading.tagName.slice(1)),
+          text: getHeadingText(heading),
+          index,
+        }))
+        .filter((item) => item.text);
 
-      const wordParts = value
-        .split(/[\s\-_/]+/)
-        .map((part) => part.trim())
-        .filter(Boolean);
-
-      if (wordParts.length >= 2) {
-        return wordParts
-          .slice(0, 2)
-          .map((part) => Array.from(part)[0] || "")
-          .join("")
-          .toUpperCase();
+      if (!headingEntries.length) {
+        resetToc();
+        return;
       }
 
-      return Array.from(value).slice(0, 3).join("").toUpperCase();
+      const primaryLevel = headingEntries[0].rawLevel;
+      const secondaryLevel = headingEntries.find((item) => item.rawLevel > primaryLevel)?.rawLevel ?? null;
+      const tocItems = [
+        {
+          id: "doc-top-anchor",
+          label: doc.title || "Untitled",
+          level: 0,
+          target: hero,
+        },
+      ];
+
+      headingEntries.forEach((item) => {
+        let level = null;
+        if (item.rawLevel === primaryLevel) {
+          level = 1;
+        } else if (secondaryLevel && item.rawLevel === secondaryLevel) {
+          level = 2;
+        }
+
+        if (!level) {
+          return;
+        }
+
+        const headingId = `toc-${doc.id}-${item.index}-${slugifyHeading(item.text)}`;
+        item.element.id = headingId;
+        item.element.classList.add("toc-anchor-target");
+        tocItems.push({
+          id: headingId,
+          label: item.text,
+          level,
+          target: item.element,
+        });
+      });
+
+      state.tocItems = tocItems.length > 1 ? tocItems : [];
+      state.activeHeadingId = state.tocItems[0]?.id || null;
+      state.isTocOpen = false;
+      renderToc();
+      requestTocSync();
+    }
+
+    function renderToc() {
+      refs.tocRail.innerHTML = "";
+      refs.tocList.innerHTML = "";
+
+      const hasToc = state.tocItems.length > 1 && window.innerWidth > 1100;
+      refs.tocShell.classList.toggle("is-hidden", !hasToc);
+      refs.tocShell.classList.toggle("is-open", hasToc && state.isTocOpen);
+      if (!hasToc) {
+        return;
+      }
+
+      state.tocItems.forEach((item) => {
+        const railButton = document.createElement("button");
+        railButton.type = "button";
+        railButton.className = "toc-rail-button";
+        railButton.dataset.tocId = item.id;
+        railButton.dataset.level = String(item.level);
+        railButton.setAttribute("aria-label", item.label);
+        railButton.title = item.label;
+        railButton.innerHTML = "<span></span>";
+        railButton.addEventListener("click", () => scrollToTocItem(item.id));
+        refs.tocRail.appendChild(railButton);
+
+        const tocButton = document.createElement("button");
+        tocButton.type = "button";
+        tocButton.className = "toc-item";
+        tocButton.dataset.tocId = item.id;
+        tocButton.dataset.level = String(item.level);
+        tocButton.innerHTML = `<span class="toc-item-label">${escapeHtml(item.label)}</span>`;
+        tocButton.addEventListener("click", () => scrollToTocItem(item.id));
+        refs.tocList.appendChild(tocButton);
+      });
+
+      syncTocHighlight();
+    }
+
+    function setTocOpen(open) {
+      if (state.tocItems.length <= 1 || window.innerWidth <= 1100) {
+        state.isTocOpen = false;
+      } else {
+        state.isTocOpen = open;
+      }
+      refs.tocShell.classList.toggle("is-open", state.isTocOpen);
+    }
+
+    function getTocItemById(id) {
+      return state.tocItems.find((item) => item.id === id) || null;
+    }
+
+    function getTargetScrollTop(target) {
+      const workspaceRect = refs.workspaceBody.getBoundingClientRect();
+      const targetRect = target.getBoundingClientRect();
+      return targetRect.top - workspaceRect.top + refs.workspaceBody.scrollTop;
+    }
+
+    function scrollToTocItem(id) {
+      const item = getTocItemById(id);
+      if (!item) {
+        return;
+      }
+
+      state.activeHeadingId = id;
+      syncTocHighlight();
+      const top = Math.max(0, getTargetScrollTop(item.target) - 96);
+      refs.workspaceBody.scrollTo({ top, behavior: "smooth" });
+    }
+
+    function syncTocHighlight() {
+      document.querySelectorAll("[data-toc-id]").forEach((element) => {
+        element.classList.toggle("active", element.dataset.tocId === state.activeHeadingId);
+      });
+    }
+
+    function syncActiveTocItem() {
+      if (state.tocItems.length <= 1 || window.innerWidth <= 1100) {
+        return;
+      }
+
+      const threshold = refs.workspaceBody.getBoundingClientRect().top + 120;
+      let activeId = state.tocItems[0].id;
+
+      state.tocItems.forEach((item) => {
+        if (item.target.getBoundingClientRect().top <= threshold) {
+          activeId = item.id;
+        }
+      });
+
+      if (activeId !== state.activeHeadingId) {
+        state.activeHeadingId = activeId;
+        syncTocHighlight();
+      }
+    }
+
+    function requestTocSync() {
+      if (tocSyncFrame !== null) {
+        return;
+      }
+
+      tocSyncFrame = window.requestAnimationFrame(() => {
+        tocSyncFrame = null;
+        syncActiveTocItem();
+      });
     }
 
     refs.docSearch.addEventListener("input", (event) => {
@@ -1592,6 +1978,24 @@
         return;
       }
       selectDoc(state.docs[0].id);
+    });
+
+    refs.compactHomeButton.addEventListener("click", () => {
+      if (!state.docs.length) {
+        return;
+      }
+      selectDoc(state.docs[0].id);
+    });
+
+    refs.compactSearchButton.addEventListener("click", () => {
+      focusSidebarSearch();
+    });
+
+    refs.compactBrowseButton.addEventListener("click", () => {
+      if (!state.docs.length) {
+        return;
+      }
+      revealActiveDocInSidebar();
     });
 
     refs.copyLinkButton.addEventListener("click", async () => {
@@ -1626,12 +2030,38 @@
       refs.appShell.classList.remove("sidebar-open");
     });
 
+    refs.workspaceBody.addEventListener("scroll", () => {
+      requestTocSync();
+    });
+
+    refs.tocShell.addEventListener("mouseenter", () => {
+      setTocOpen(true);
+    });
+
+    refs.tocShell.addEventListener("mouseleave", () => {
+      setTocOpen(false);
+    });
+
+    refs.tocShell.addEventListener("focusin", () => {
+      setTocOpen(true);
+    });
+
+    refs.tocShell.addEventListener("focusout", (event) => {
+      if (!refs.tocShell.contains(event.relatedTarget)) {
+        setTocOpen(false);
+      }
+    });
+
     window.addEventListener("resize", () => {
       if (window.innerWidth > 900) {
         refs.appShell.classList.remove("sidebar-open");
       }
+      syncSidebarToggleState();
+      renderToc();
+      requestTocSync();
     });
 
+    syncSidebarToggleState();
     loadDocs();
   </script>
 </body>
