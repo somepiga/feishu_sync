@@ -1,0 +1,15 @@
+{
+  "id": "placeholder-preview-article",
+  "title": "占位文章：目录导航预览",
+  "updated_at": "2026-04-03T14:10:00+08:00",
+  "raw_content": "占位文章：目录导航预览\n\n这一页不是飞书真实内容，只是为了先确认 GitHub Pages 的目录、面包屑、搜索和阅读区样式。\n\n如果你看着结构顺手，我下一步就把真实同步结果重新接回来。\n\n这次主要想确认什么\n- 左侧目录项的密度和点击反馈\n- 顶部面包屑和标题区是否足够清晰\n- 正文在桌面和手机上是否都舒服\n\n一段代码样式\ngit push origin master\npython -m http.server 8123\n\n一个简单表格\n检查项 / 预期\n目录导航 / 标题可见、当前项高亮\n阅读区 / 宽度舒适、层级清楚\n移动端 / 侧边栏可抽屉打开\n",
+  "render_html": "<h2>这是用来校验导航结构的占位文档</h2><p>这一页不是飞书真实内容，只是为了先确认 GitHub Pages 的目录、面包屑、搜索和阅读区样式。</p><blockquote>如果你看着结构顺手，我下一步就把真实同步结果重新接回来。</blockquote><h3>这次主要想确认什么</h3><ul><li>左侧目录项的密度和点击反馈</li><li>顶部面包屑和标题区是否足够清晰</li><li>正文在桌面和手机上是否都舒服</li></ul><h3>一段代码样式</h3><pre><code>git push origin master\npython -m http.server 8123</code></pre><h3>一个简单表格</h3><div class=\"doc-table-wrap\"><table class=\"doc-table\"><tbody><tr><td>检查项</td><td>预期</td></tr><tr><td>目录导航</td><td>标题可见、当前项高亮</td></tr><tr><td>阅读区</td><td>宽度舒适、层级清楚</td></tr><tr><td>移动端</td><td>侧边栏可抽屉打开</td></tr></tbody></table></div><p>如果需要，我也可以再加一组父子级目录，专门帮你看缩进层级是否合理。</p>",
+  "assets": [],
+  "blocks": [],
+  "node_token": "placeholder-preview-article",
+  "parent_node_token": "",
+  "wiki_token": "preview-space",
+  "space_id": "preview-space",
+  "type": "docx",
+  "sync_format_version": 4
+}

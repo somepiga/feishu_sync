@@ -1,0 +1,18 @@
+{
+  "generated_at": "2026-04-03T14:10:00+08:00",
+  "count": 1,
+  "documents": [
+    {
+      "id": "placeholder-preview-article",
+      "title": "占位文章：目录导航预览",
+      "updated_at": "2026-04-03T14:10:00+08:00",
+      "type": "docx",
+      "node_token": "placeholder-preview-article",
+      "parent_node_token": "",
+      "wiki_token": "preview-space",
+      "space_id": "preview-space",
+      "file": "content/documents/placeholder-preview-article.json",
+      "order": 0
+    }
+  ]
+}
